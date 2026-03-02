@@ -3,221 +3,209 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>MP-tools</title>
+  <title>Museic Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen py-8">
-  <div class="max-w-2xl mx-auto px-4">
+<body class="bg-gray-50 flex h-screen overflow-hidden">
 
-    <!-- SPLITTER SECTION -->
-    <div class="bg-white rounded-lg shadow-sm border p-6 mb-10">
-      <h1 class="text-2xl font-bold text-gray-900 mb-6">Splitter Music</h1>
-
-      {% with messages = get_flashed_messages() %}
-      {% if messages %}
-      <div class="mb-4">
-        {% for msg in messages %}
-        <div class="text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2 mb-2">{{ msg }}</div>
-        {% endfor %}
-      </div>
-      {% endif %}
-      {% endwith %}
-
-      <form action="/remove" method="post" enctype="multipart/form-data" class="mb-6" id="uploadForm">
-        <div class="mb-4">
-          <input type="file" name="file" accept=".mp3,.wav" required
-            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-        </div>
-        <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded hover:bg-gray-800 transition-colors">
-          Process
-        </button>
-      </form>
-
-      <div id="loadingState" class="hidden mb-6 p-4 bg-blue-50 border border-blue-200 rounded">
-        <div class="flex items-center space-x-3">
-          <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-          <div>
-            <p class="font-medium text-blue-800" id="loadingText">Uploading file...</p>
-            <p class="text-sm text-blue-600" id="loadingDetail">Please wait while we process your audio</p>
-          </div>
-        </div>
-      </div>
-
-      {% if has_result %}
-      <div class="border-t pt-6">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Hasil untuk: {{ song }}</h2>
-
-        <div class="mb-4">
-          <p class="font-medium text-gray-700 mb-2">Vocals:</p>
-          <a href="{{ vocals }}"
-            class="inline-block bg-gray-100 text-gray-900 px-4 py-2 rounded hover:bg-gray-200 transition-colors">Download</a>
-          <p class="font-medium text-gray-700 mb-3">Instrumental:</p>
-          <a href="{{ instrumental }}"
-            class="inline-block bg-gray-100 text-gray-900 px-4 py-2 rounded hover:bg-gray-200 transition-colors">Download</a>
-        </div>
-
-        {% if instrumental %}
-        <div>
-          <p class="font-medium text-gray-700 mb-3">Additional:</p>
-          <div class="space-y-2">
-            <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded">
-              <span class="text-gray-700">Bass</span>
-              <a href="{{ bass }}" class="text-gray-900 hover:text-gray-600 font-medium">Download</a>
-            </div>
-            <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded">
-              <span class="text-gray-700">Drums</span>
-              <a href="{{ drums }}" class="text-gray-900 hover:text-gray-600 font-medium">Download</a>
-            </div>
-            <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded">
-              <span class="text-gray-700">Other</span>
-              <a href="{{ other }}" class="text-gray-900 hover:text-gray-600 font-medium">Download</a>
-            </div>
-          </div>
-        </div>
-        {% endif %}
-      </div>
-      {% endif %}
+  <aside class="w-64 bg-gray-900 text-white flex flex-col flex-shrink-0 shadow-lg">
+    <div class="h-16 flex items-center justify-center border-b border-gray-800">
+      <h1 class="text-xl font-bold tracking-wider">Museic</h1>
     </div>
+    <nav class="flex-1 px-4 py-6 space-y-2">
+      <button onclick="switchTab('splitter')" id="nav-splitter" class="w-full text-left px-4 py-3 rounded-lg bg-gray-800 text-white transition font-medium">
+        Splitter Music
+      </button>
+      <button onclick="switchTab('extender')" id="nav-extender" class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition font-medium">
+        Extender Music
+      </button>
+      <button onclick="switchTab('lyrics')" id="nav-lyrics" class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition font-medium">
+        AI Transkrip
+      </button>
+      <button onclick="switchTab('identify')" id="nav-identify" class="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition font-medium">
+        Shazam Web
+      </button>
+    </nav>
+  </aside>
 
-    <!-- EXTENDER SECTION -->
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-      <h1 class="text-2xl font-bold text-gray-900 mb-6">Extender Music</h1>
+  <main class="flex-1 flex flex-col h-screen overflow-y-auto">
+    <div class="p-8 max-w-4xl w-full mx-auto">
 
-      <form action="/extend" method="post" enctype="multipart/form-data" class="space-y-6">
+      <div id="tab-splitter" class="tab-content {{ 'active' if active_tab == 'splitter' or not active_tab else '' }}">
+        <div class="bg-white rounded-xl shadow-sm border p-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-4">Splitter Music (Demucs)</h2>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Pilih File Lagu</label>
-          <input type="file" name="file" accept=".mp3,.wav" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 
-        file:rounded file:border-0 file:text-sm file:font-medium 
-        file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-        </div>
+          {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="mb-4">
+              {% for msg in messages %}
+              <div class="text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-2">{{ msg }}</div>
+              {% endfor %}
+            </div>
+            {% endif %}
+          {% endwith %}
 
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Mulai (detik)</label>
-            <input type="number" name="start_sec" step="0.1" required
-              class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-gray-900 focus:outline-none">
+          <form action="/remove" method="post" enctype="multipart/form-data" class="mb-6" id="uploadForm">
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Upload Audio File (.mp3, .wav)</label>
+              <input type="file" name="file" accept=".mp3,.wav" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 transition-colors border rounded-lg cursor-pointer">
+            </div>
+            <button type="submit" class="bg-gray-900 text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-colors font-medium">
+              Proses Audio
+            </button>
+          </form>
+
+          <div id="loadingState" class="hidden mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div class="flex items-center space-x-3">
+              <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+              <div>
+                <p class="font-medium text-blue-800" id="loadingText">Mengunggah file...</p>
+                <p class="text-sm text-blue-600" id="loadingDetail">Mohon tunggu sementara audio diproses</p>
+              </div>
+            </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Selesai (detik)</label>
-            <input type="number" name="end_sec" step="0.1" required
-              class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-gray-900 focus:outline-none">
-          </div>
-        </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Ulangi</label>
-            <input type="number" name="repeat" value="2" min="1"
-              class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-gray-900 focus:outline-none">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Fade (ms)</label>
-            <input type="number" name="fade_ms" value="300" min="0"
-              class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-gray-900 focus:outline-none">
-          </div>
-        </div>
+          {% if has_result %}
+          <div class="border-t pt-6 mt-2">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Hasil untuk: <span class="text-blue-600">{{ song }}</span></h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div class="p-4 bg-gray-50 rounded-lg border">
+                <p class="font-medium text-gray-700 mb-3">🎤 Vocals</p>
+                <a href="{{ vocals }}" class="block text-center bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition">Download</a>
+              </div>
+              <div class="p-4 bg-gray-50 rounded-lg border">
+                <p class="font-medium text-gray-700 mb-3">🎸 Instrumental</p>
+                <a href="{{ instrumental }}" class="block text-center bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition">Download</a>
+              </div>
+            </div>
 
-        <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded hover:bg-gray-800 transition-colors">
-          Extend Track
-        </button>
-      </form>
-
-      {% if extended %}
-      <div class="border-t pt-6 mt-6">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Hasil Perpanjangan</h2>
-        <div class="text-center">
-          <p class="mb-3 text-gray-700">✅ Lagu berhasil diperpanjang</p>
-          <a href="{{ extended_path }}"
-            class="bg-gray-100 text-gray-900 px-4 py-2 rounded hover:bg-gray-200 transition-colors">
-            Download Extended Track
-          </a>
+            {% if instrumental %}
+            <div class="mt-6">
+              <p class="font-medium text-gray-700 mb-3">Stem Tambahan (Opsional):</p>
+              <div class="space-y-2">
+                <div class="flex justify-between items-center py-2 px-4 bg-gray-50 rounded-lg border">
+                  <span class="text-gray-700 font-medium">Bass</span>
+                  <a href="{{ bass }}" class="text-blue-600 hover:text-blue-800 font-medium">Download</a>
+                </div>
+                <div class="flex justify-between items-center py-2 px-4 bg-gray-50 rounded-lg border">
+                  <span class="text-gray-700 font-medium">Drums</span>
+                  <a href="{{ drums }}" class="text-blue-600 hover:text-blue-800 font-medium">Download</a>
+                </div>
+                <div class="flex justify-between items-center py-2 px-4 bg-gray-50 rounded-lg border">
+                  <span class="text-gray-700 font-medium">Other</span>
+                  <a href="{{ other }}" class="text-blue-600 hover:text-blue-800 font-medium">Download</a>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
         </div>
       </div>
-      {% endif %}
-    </div>
 
-  </div>
+      <div id="tab-extender" class="tab-content {{ 'active' if active_tab == 'extender' else '' }}">
+        <div class="bg-white rounded-xl shadow-sm border p-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-4">Extender Music</h2>
+          
+          <form action="/extend" method="post" enctype="multipart/form-data" class="space-y-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Pilih File Lagu</label>
+              <input type="file" name="file" accept=".mp3,.wav" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 transition-colors border rounded-lg cursor-pointer">
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Mulai (detik)</label>
+                <input type="number" name="start_sec" step="0.1" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-gray-900 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Selesai (detik)</label>
+                <input type="number" name="end_sec" step="0.1" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-gray-900 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ulangi (x kali)</label>
+                <input type="number" name="repeat" value="2" min="1" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-gray-900 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fade (ms)</label>
+                <input type="number" name="fade_ms" value="300" min="0" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-gray-900 focus:outline-none">
+              </div>
+            </div>
+
+            <button type="submit" class="bg-gray-900 text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-colors font-medium">
+              Extend Track
+            </button>
+          </form>
+
+          {% if extended %}
+          <div class="border-t pt-6 mt-8">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4 text-center">Hasil Perpanjangan</h3>
+            <div class="text-center bg-gray-50 border p-6 rounded-lg">
+              <p class="mb-4 text-gray-700 font-medium">✅ Lagu berhasil diperpanjang</p>
+              <a href="{{ extended_path }}" class="inline-block bg-gray-900 text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-colors">
+                Download Extended Track
+              </a>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div id="tab-lyrics" class="tab-content">
+        <div class="bg-white rounded-xl shadow-sm border p-8 text-center py-20">
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">AI Transkrip (Whisper)</h2>
+          <p class="text-gray-500">Fitur sedang dalam pengembangan...</p>
+        </div>
+      </div>
+
+      <div id="tab-identify" class="tab-content">
+        <div class="bg-white rounded-xl shadow-sm border p-8 text-center py-20">
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Identifikasi Lagu (Shazam API)</h2>
+          <p class="text-gray-500">Fitur sedang dalam pengembangan...</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
 
   <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      
+      document.querySelectorAll('aside nav button').forEach(btn => {
+        btn.classList.remove('bg-gray-800', 'text-white');
+        btn.classList.add('text-gray-400');
+      });
+      
+      document.getElementById('tab-' + tabId).classList.add('active');
+      
+      const activeBtn = document.getElementById('nav-' + tabId);
+      activeBtn.classList.remove('text-gray-400');
+      activeBtn.classList.add('bg-gray-800', 'text-white');
+    }
+
     const uploadForm = document.getElementById('uploadForm');
     const loadingState = document.getElementById('loadingState');
     const loadingText = document.getElementById('loadingText');
     const loadingDetail = document.getElementById('loadingDetail');
-    const submitButton = uploadForm.querySelector('button[type="submit"]');
+    if(uploadForm) {
+      const submitButton = uploadForm.querySelector('button[type="submit"]');
+      uploadForm.addEventListener('submit', function (e) {
+        loadingState.classList.remove('hidden');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Processing...';
+        submitButton.classList.add('opacity-50', 'cursor-not-allowed');
 
-    uploadForm.addEventListener('submit', function (e) {
-      loadingState.classList.remove('hidden');
-      submitButton.disabled = true;
-      submitButton.textContent = 'Processing...';
-      submitButton.classList.add('opacity-50', 'cursor-not-allowed');
-
-      setTimeout(() => {
-        loadingText.textContent = 'Analyzing audio file...';
-        loadingDetail.textContent = 'HTDemucs is separating audio tracks';
-      }, 1000);
-
-      setTimeout(() => {
-        loadingText.textContent = 'Separating vocals...';
-        loadingDetail.textContent = 'This may take several minutes for large files';
-      }, 3000);
-
-      setTimeout(() => {
-        loadingText.textContent = 'Processing instrumental tracks...';
-        loadingDetail.textContent = 'Generating bass, drums, and other components';
-      }, 8000);
-
-      setTimeout(() => {
-        loadingText.textContent = 'Finalizing results...';
-        loadingDetail.textContent = 'Almost done, preparing downloads';
-      }, 15000);
-    });
-
-    const extendForm = document.querySelector('form[action="/extend"]');
-    const extendResult = document.createElement('div');
-    extendResult.className = "mt-6 text-center";
-    extendForm.insertAdjacentElement('afterend', extendResult);
-
-    extendForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      extendResult.innerHTML = `
-    <div class="mt-4 p-4 border rounded-lg text-gray-700 bg-gray-50">
-      ⏳ Memproses lagu... Mohon tunggu sebentar.
-    </div>
-  `;
-
-      const formData = new FormData(extendForm);
-      const res = await fetch("/extend", {
-        method: "POST",
-        body: formData
+        setTimeout(() => { loadingText.textContent = 'Analyzing audio...'; loadingDetail.textContent = 'Memisahkan instrumen...'; }, 1000);
+        setTimeout(() => { loadingText.textContent = 'Processing stems...'; loadingDetail.textContent = 'Harap bersabar...'; }, 5000);
       });
-
-      const data = await res.json();
-      if (data.success) {
-        extendResult.innerHTML = `
-      <div class="border-t pt-6 mt-6">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Hasil Perpanjangan</h2>
-        <div class="text-center">
-          <p class="mb-3 text-gray-700">✅ Lagu berhasil diperpanjang!</p>
-          <a href="${data.extended_path}"
-            class="bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-800 transition-colors">
-            Download Extended Track
-          </a>
-        </div>
-      </div>
-    `;
-      } else {
-        extendResult.innerHTML = `
-      <div class="mt-4 p-4 border border-red-400 text-red-700 bg-red-50 rounded-lg">
-        ❌ Gagal memperpanjang lagu: ${data.error || "Terjadi kesalahan."}
-      </div>
-    `;
-      }
-    });
-
+    }
   </script>
 </body>
-
 </html>

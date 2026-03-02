@@ -1,6 +1,6 @@
 import os
 import subprocess
-from flask import Flask, request, render_template, send_from_directory, redirect, url_for, flash, jsonify
+from flask import Flask, request, render_template, send_from_directory, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 from pydub import AudioSegment
 from modules.splitter.utils import allowed_file
@@ -26,7 +26,7 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 # -------------------------
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", active_tab="splitter")
 
 
 # -------------------------
@@ -60,7 +60,6 @@ def remove_vocals():
             flash("Proses gagal. Folder hasil tidak ditemukan.")
             return redirect(url_for("index"))
 
-        # Gabungkan instrumental
         bass = AudioSegment.from_wav(os.path.join(result_dir, "bass.wav"))
         drums = AudioSegment.from_wav(os.path.join(result_dir, "drums.wav"))
         other = AudioSegment.from_wav(os.path.join(result_dir, "other.wav"))
@@ -69,6 +68,7 @@ def remove_vocals():
 
         return render_template(
             "index.html",
+            active_tab="splitter",
             has_result=True,
             song=song_name,
             vocals=f"/download/{song_name}/vocals.wav",
@@ -96,11 +96,13 @@ def download_file(song, stem):
 def extend_track():
     try:
         if 'file' not in request.files:
-            return jsonify({"success": False, "error": "Tidak ada file yang diunggah."})
+            flash("Tidak ada file yang diunggah.")
+            return render_template("index.html", active_tab="extender")
 
         file = request.files['file']
         if file.filename == '':
-            return jsonify({"success": False, "error": "Nama file kosong."})
+            flash("Nama file kosong.")
+            return render_template("index.html", active_tab="extender")
 
         filename = secure_filename(file.filename)
         input_path = os.path.join("uploads", filename)
@@ -121,16 +123,16 @@ def extend_track():
             crossfade_ms=fade_ms
         )
 
-        return jsonify({
-            "success": True,
-            "extended_path": "/" + output_path.replace("\\", "/")
-        })
+        return render_template(
+            "index.html",
+            active_tab="extender",
+            extended=True,
+            extended_path="/" + output_path.replace("\\", "/")
+        )
 
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": str(e)
-        })
+        flash(f"Gagal memperpanjang lagu: {str(e)}")
+        return render_template("index.html", active_tab="extender")
 
 
 @app.route("/auto_extend", methods=["POST"])
@@ -143,16 +145,16 @@ def auto_extend_route():
     output_path, info = auto_extend(path)
     return render_template(
         "index.html",
+        active_tab="extender",
         extended=True,
         extended_path=f"/download_extended/{os.path.basename(output_path)}",
         auto_info=info,
     )
 
 
-@app.route("/download_extended/<filename>")
-def download_extended(filename):
-    return send_from_directory(app.config["OUTPUT_FOLDER"], filename, as_attachment=True)
-
+@app.route("/output/<filename>")
+def serve_output(filename):
+    return send_from_directory(app.config.get("OUTPUT_FOLDER", "output"), filename)
 
 if __name__ == "__main__":
     app.run(debug=True)
