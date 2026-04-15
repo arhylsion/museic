@@ -9,7 +9,8 @@ setup(
         'demucs==4.0.1',
         'librosa',
         'numpy',
-        'textual', 
+        'diffq',
+        'tqdm',
     ],
     entry_points='''
         [console_scripts]

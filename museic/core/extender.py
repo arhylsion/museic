@@ -1,69 +1,62 @@
-# museic/core/extender.py
 import os
 import librosa
-import numpy as np
 from pydub import AudioSegment
+from tqdm import tqdm
 
-def detect_segments(audio_path):
-    """Detects the chorus area using Librosa."""
-    print(f"[*] Analyzing tempo and beats for: {audio_path}")
-    y, sr = librosa.load(audio_path, mono=True)
+def find_loop_points(audio_path, edge_duration=5.0):
+    total_duration = librosa.get_duration(path=audio_path)
     
-    tempo, beats = librosa.beat.beat_track(y=y, sr=sr)
-    beat_times = librosa.frames_to_time(beats, sr=sr)
+    if total_duration < edge_duration * 2:
+        return 0, total_duration 
 
-    chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
-    sim_matrix = np.dot(chroma.T, chroma)
+    y_start, sr = librosa.load(audio_path, sr=22050, duration=edge_duration)
+    onsets_start = librosa.onset.onset_detect(y=y_start, sr=sr, units='time')
+    
+    y_end, _ = librosa.load(audio_path, sr=22050, offset=total_duration - edge_duration)
+    onsets_end = librosa.onset.onset_detect(y=y_end, sr=sr, units='time')
 
-    sim_sums = np.sum(sim_matrix, axis=1)
-    peak_idx = np.argmax(sim_sums)
+    first_beat = onsets_start[0] if len(onsets_start) > 0 else 0.0
+    last_beat = (total_duration - edge_duration) + onsets_end[-1] if len(onsets_end) > 0 else total_duration
 
-    start_sec = max(0, beat_times[peak_idx] - 10)  
-    end_sec = min(beat_times[-1], beat_times[peak_idx] + 20)
+    return first_beat, last_beat
 
-    return {
-        "tempo": tempo,
-        "suggested_segment": (round(start_sec, 2), round(end_sec, 2))
-    }
-
-def extend_music(input_path, start_sec, end_sec, repeat=2, crossfade_ms=500):
-    """Extends a specific segment of the music."""
-    print(f"[*] Loading audio for extension...")
-    song = AudioSegment.from_file(input_path)
-    duration_sec = len(song) / 1000
-    end_sec = min(end_sec, duration_sec)
-
-    segment = song[start_sec * 1000:end_sec * 1000]
-    if len(segment) == 0:
-        raise ValueError("Empty segment. Check start and end values.")
-
-    print(f"[*] Applying crossfade ({crossfade_ms}ms) and extending {repeat} times...")
-    segment = segment.fade_in(crossfade_ms // 2).fade_out(crossfade_ms // 2)
-
-    extended_part = segment
-    for _ in range(repeat - 1):
-        extended_part = extended_part.append(segment, crossfade=crossfade_ms)
-
-    output_song = song[:end_sec * 1000] + extended_part + song[end_sec * 1000:]
-    return output_song
-
-def process_extension(input_path, output_dir="output", start_sec=None, end_sec=None, auto=False):
-    """Main pipeline for extending a track."""
+def process_extension(input_path, start_sec=0, end_sec=0, auto=False, repeat=2, output_dir="output"):
     os.makedirs(output_dir, exist_ok=True)
     song_name = os.path.splitext(os.path.basename(input_path))[0]
     output_path = os.path.join(output_dir, f"{song_name}_extended.mp3")
 
-    if auto:
-        info = detect_segments(input_path)
-        start_sec, end_sec = info["suggested_segment"]
-        print(f"[+] Auto-detected chorus area: {start_sec:.1f}s -> {end_sec:.1f}s")
-    
-    if start_sec is None or end_sec is None:
-        raise ValueError("Must provide start/end times or use --auto.")
+    print("Loading track into memory")
+    song = AudioSegment.from_file(input_path)
 
-    result_audio = extend_music(input_path, start_sec, end_sec)
+    if auto:
+        print("Running Edge Beat Sync")
+        first_beat, last_beat = find_loop_points(input_path)
+        
+        start_ms = int(first_beat * 1000)
+        end_ms = int(last_beat * 1000)
+        song_core = song[start_ms:end_ms]
+        
+        crossfade_ms = 4500 
+    else:
+        song_core = song
+        crossfade_ms = 0
+
+    print("Linking track")
     
-    print(f"[*] Exporting extended track to: {output_path}")
-    result_audio.export(output_path, format="mp3", bitrate="192k") # Default to MP3 for space
-    print("[+] Extension complete!")
+    extended_song = song_core
+    song_core_faded = song_core.fade_in(crossfade_ms).fade_out(crossfade_ms)
+    
+    for _ in tqdm(range(repeat - 1), desc="Looping", bar_format="{l_bar}{bar} {n_fmt} {total_fmt}"):
+        extended_song = extended_song.append(song_core_faded, crossfade=crossfade_ms)
+
+    extended_song = extended_song.fade_out(3000)
+
+    print("Exporting audio")
+    extended_song.export(
+        output_path, 
+        format="mp3", 
+        bitrate="192k",
+        parameters=["-threads", "4", "-preset", "ultrafast"] 
+    )
+    
     return output_path

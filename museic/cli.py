@@ -1,86 +1,77 @@
 import argparse
 import sys
-import subprocess
-from museic.core.extender import process_extension
-from museic.core.separator import process_separation
-from museic.tui import run_tui
+import os
 from museic.utils.helpers import get_wsl_path
 
-def get_wsl_path(path):
-    """Helper to convert Windows paths to WSL paths dynamically."""
-    if path and ":\\" in path:
-        try:
-            return subprocess.check_output(["wslpath", path]).decode().strip()
-        except Exception:
-            # Fallback if wslpath tool is missing
-            drive = path[0].lower()
-            remainder = path[3:].replace("\\", "/")
-            return f"/mnt/{drive}/{remainder}"
-    return path
+def cmd_extend(args):
+    from museic.core.extender import process_extension
+    path = get_wsl_path(args.input)
+    if not os.path.exists(path):
+        print("Error Input file not found")
+        sys.exit(1)
+        
+    print(f"Executing target {os.path.basename(path)}")
+    try:
+        out = process_extension(
+            input_path=path,
+            start_sec=args.start,
+            end_sec=args.end,
+            auto=args.auto,
+            repeat=args.repeat
+        )
+        print(f"Output finalized {out}")
+    except Exception as e:
+        print(f"Core Error {e}")
+        sys.exit(1)
+
+def cmd_separate(args):
+    from museic.core.separator import process_separation
+    path = get_wsl_path(args.input)
+    if not os.path.exists(path):
+        print("Error Input file not found")
+        sys.exit(1)
+        
+    print(f"Executing target {os.path.basename(path)}")
+    try:
+        out_dir = process_separation(
+            input_path=path,
+            start_sec=args.start,
+            end_sec=args.end,
+            target_format=args.export
+        )
+        print(f"Output finalized {out_dir}")
+    except Exception as e:
+        print(f"Core Error {e}")
+        sys.exit(1)
 
 def main():
-    """Main entry point for the Museic CLI."""
     parser = argparse.ArgumentParser(
-        description="Museic CLI: Advanced Audio Manipulation Tool",
-        prog="museic"
+        prog="museic",
+        description="High performance audio manipulation utility",
+        formatter_class=argparse.RawTextHelpFormatter
     )
-    
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # Command 1: TUI (Terminal User Interface)
-    tui_parser = subparsers.add_parser("tui", help="Launch the interactive Terminal UI")
+    subparsers = parser.add_subparsers(dest="command", metavar="command")
 
-    # Command 2: Extend Track
-    extend_parser = subparsers.add_parser("extend", help="Extend an audio track")
-    extend_parser.add_argument("-i", "--input", required=True, help="Path to input audio file")
-    extend_parser.add_argument("-s", "--start", type=float, help="Start time in seconds")
-    extend_parser.add_argument("-e", "--end", type=float, help="End time in seconds")
-    extend_parser.add_argument("--auto", action="store_true", help="Auto-detect chorus to extend")
+    ep = subparsers.add_parser("extend", help="Extend an audio track")
+    ep.add_argument("-i", "--input", required=True, metavar="FILE")
+    ep.add_argument("-s", "--start", type=float, default=0.0, metavar="SEC")
+    ep.add_argument("-e", "--end", type=float, default=0.0, metavar="SEC")
+    ep.add_argument("-r", "--repeat", type=int, default=2, metavar="N")
+    ep.add_argument("--auto", action="store_true")
 
-    # Command 3: Separate Stems
-    sep_parser = subparsers.add_parser("separate", help="Separate stems using Demucs")
-    sep_parser.add_argument("-i", "--input", required=True, help="Path to input audio file")
-    sep_parser.add_argument("-s", "--start", type=float, default=0.0, help="Start time in seconds (for targeted slicing)")
-    sep_parser.add_argument("-e", "--end", type=float, default=10.0, help="End time in seconds (for targeted slicing)")
-    sep_parser.add_argument("--export", choices=['wav', 'mp3', 'ogg'], default='mp3', help="Output format (default: mp3)")
+    sp = subparsers.add_parser("separate", help="Isolate stems in efficient mode")
+    sp.add_argument("-i", "--input", required=True, metavar="FILE")
+    sp.add_argument("-s", "--start", type=float, default=0.0, metavar="SEC")
+    sp.add_argument("-e", "--end", type=float, default=10.0, metavar="SEC")
+    sp.add_argument("--export", choices=["wav", "mp3", "ogg"], default="mp3")
 
-    # Parse arguments
     args = parser.parse_args()
 
-    # Pre-process: Handle Windows paths automatically for WSL compatibility
-    if hasattr(args, 'input') and args.input:
-        args.input = get_wsl_path(args.input)
-
-    # Routing the commands
-    if args.command == "tui":
-        run_tui()
-        sys.exit(0)
-    
-    elif args.command == "extend":
-        print(f"[*] Initializing Extension pipeline for: {args.input}")
-        try:
-            process_extension(
-                input_path=args.input,
-                start_sec=args.start,
-                end_sec=args.end,
-                auto=args.auto
-            )
-        except Exception as e:
-            print(f"[!] Extension Failed: {e}")
-
+    if args.command == "extend":
+        cmd_extend(args)
     elif args.command == "separate":
-        print(f"[*] Initializing Separation pipeline for: {args.input}")
-        try:
-            # Slicing parameters are passed to maintain <100MB RAM and <30s runtime
-            process_separation(
-                input_path=args.input,
-                start_sec=args.start,
-                end_sec=args.end,
-                target_format=args.export
-            )
-        except Exception as e:
-            print(f"[!] Separation Failed: {e}")
-
+        cmd_separate(args)
     else:
         parser.print_help()
         sys.exit(1)
