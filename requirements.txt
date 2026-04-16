@@ -1,9 +1,0 @@
-Flask==3.0.3           
-pydub==0.25.1          
-audiomentations==0.36.0  
-demucs==4.0.1        
-torch>=2.1.0           
-torchaudio>=2.1.0   
-numpy>=1.24.0          
-soundfile==0.12.1     
-ffmpeg-python==0.2.0  
