@@ -1,13 +1,11 @@
 # Museic
 
-A lightweight, cross-platform Command Line Interface utility for advanced audio manipulation. Museic operates at the native system level to execute nine professional audio engineering tasks. Designed with a strict focus on extreme processing speed, seamless transitions, and minimum storage overhead, it guarantees execution within seconds while keeping RAM usage strictly under 100MB.
+Cross-platform Command Line Interface utility for advanced audio manipulation. Operates at the native system level to execute nine audio engineering tasks.
 
 ## Key Features
 
-* **Pure Headless Architecture:** Zero UI overhead guarantees maximum RAM efficiency and raw execution speed.
 * **9-in-1 Audio Engine:** Includes modules for separation, seamless looping, vocal extraction, auto-ducking, LUFS optimization, directory watching, noise reduction, silence trimming, and tempo manipulation.
-* **Dynamic Plugin Ecosystem:** Extend core capabilities by dropping Python scripts into the plugins directory. Museic automatically registers new commands without altering core code.
-* **Ultra-Fast Seamless Looping:** Utilizes Edge Beat-Matching to seamlessly loop tracks without relying on heavy DSP analysis.
+* **Dynamic Plugin Ecosystem:** Extend core capabilities by dropping Python scripts into the plugins directory, automatically registers new commands without altering core code.
 * **Targeted Slicing & Extraction:** Processes only specific user-defined timestamps using quantized models (mdx_extra_q). 
 * **Broadcast Standard Optimization:** Built-in FFmpeg dynamic range compression and LUFS normalization for broadcast-ready audio.
 
