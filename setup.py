@@ -11,7 +11,8 @@ setup(
         'numpy',
         'diffq',
         'tqdm',
-        'watchdog'
+        'watchdog',
+        'gradio'
     ],
     entry_points='''
         [console_scripts]

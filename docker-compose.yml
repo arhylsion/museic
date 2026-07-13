@@ -1,0 +1,12 @@
+services:
+  museic:
+    build: .
+    image: museic:latest
+    container_name: museic
+    volumes:
+      - .:/workspace
+      - ./input:/workspace/input
+      - ./output:/workspace/output
+    working_dir: /workspace
+    ports:
+      - "7860:7860"
