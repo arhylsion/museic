@@ -344,7 +344,7 @@ with gr.Blocks(title="Museic") as demo:
                     guide_next = gr.Button(">", size="sm", scale=0, min_width=40)
 
     gr.Markdown("---")
-    gr.Markdown("Museic by Arhylsion (https://github.com/arhylsion)")
+    gr.Markdown("Museic by Arhylsion (https://github.com/arhylsion/museic)")
     gr.Markdown("All processing runs locally. Your audio never leaves your device.")
 
     panels = [extend_panel, separate_panel, extract_panel, mix_panel, optimize_panel, enhance_panel, trim_panel, vibe_panel, guide_panel]
