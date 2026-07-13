@@ -141,7 +141,7 @@ with gr.Blocks(title="Museic") as demo:
     gr.Markdown("Upload audio, adjust parameters, and process -- all locally on your device.")
 
     with gr.Row(equal_height=True):
-        with gr.Column(scale=0, min_width=200, elem_classes="sidebar-col"):
+        with gr.Column(scale=0, min_width=150, elem_classes="sidebar-col"):
             tool_radio = gr.Radio(
                 choices=TOOLS, value="Extend",
                 label="", show_label=False,
