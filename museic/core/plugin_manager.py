@@ -1,7 +1,5 @@
 import os
-import sys
 import importlib.util
-import inspect
 
 def load_plugins(parser, subparsers):
     plugin_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "plugins")

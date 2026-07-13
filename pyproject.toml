@@ -1,0 +1,11 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:pydub.*",
+    "ignore::DeprecationWarning:audioread.*",
+    "ignore::FutureWarning:librosa.*",
+    "ignore::UserWarning:museic.core.extractor",
+]

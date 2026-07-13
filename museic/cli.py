@@ -1,6 +1,5 @@
 import argparse
 import sys
-import os
 import difflib
 from museic.utils.helpers import get_wsl_path
 from museic.core.plugin_manager import load_plugins
