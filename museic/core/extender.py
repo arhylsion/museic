@@ -44,12 +44,18 @@ def process_extension(input_path, start_sec=0, end_sec=0, auto=False, repeat=2, 
     print("Linking track")
     
     extended_song = song_core
-    song_core_faded = song_core.fade_in(crossfade_ms).fade_out(crossfade_ms)
+    if crossfade_ms > 0:
+        song_core_faded = song_core.fade_in(crossfade_ms).fade_out(crossfade_ms)
+    else:
+        song_core_faded = song_core
     
     for _ in tqdm(range(repeat - 1), desc="Looping", bar_format="{l_bar}{bar} {n_fmt} {total_fmt}"):
         extended_song = extended_song.append(song_core_faded, crossfade=crossfade_ms)
 
-    extended_song = extended_song.fade_out(3000)
+    if len(extended_song) > 3000:
+        extended_song = extended_song.fade_out(3000)
+    else:
+        extended_song = extended_song.fade_out(int(len(extended_song) * 0.1))
 
     print("Exporting audio")
     extended_song.export(

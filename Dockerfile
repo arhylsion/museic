@@ -36,6 +36,7 @@ WORKDIR /workspace
 COPY . /workspace
 
 RUN pip install --no-cache-dir -e . --no-deps
+RUN pip install --no-cache-dir pytest
 
 EXPOSE 7860
 CMD ["python", "-m", "museic.gradio_app"]

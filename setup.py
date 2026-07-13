@@ -14,6 +14,9 @@ setup(
         'watchdog',
         'gradio'
     ],
+    extras_require={
+        'dev': ['pytest'],
+    },
     entry_points='''
         [console_scripts]
         museic=museic.cli:main
