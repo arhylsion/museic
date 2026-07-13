@@ -51,49 +51,125 @@ def collect_output_files(dir_path):
     return files if files else dir_path
 
 
-guide_text = {
-    "EN": {
-        "🔁 Extend": "Loop and extend audio tracks seamlessly — automatically detects beat-aligned loop points or lets you set them manually. Perfect for making background music longer.",
-        "🎤 Separate": "Isolate vocals and instrumental stems using Demucs AI engine. Process only a specific slice to save time and memory.",
-        "🎯 Extract": "Automatically detect the most energetic part of a song (the hook/chorus) and extract it. Uses Separate internally for clean stems.",
-        "🎚️ Mix": "Auto-ducking: lowers background music when voice is detected, raises it back during silence. Smooth attack/release for natural transitions.",
-        "📊 Optimize": "Normalize audio to broadcast-standard LUFS loudness (-14 LUFS default). Ensures consistent volume across YouTube, Spotify, radio.",
-        "✨ Enhance": "Reduce background noise (hiss, hum) with adaptive filtering and boost voice clarity with compressor + EQ.",
-        "✂️ Trim": "Automatically remove silence and dead air from recordings. Aggressive mode removes shorter pauses.",
-        "🎵 Vibe": "Social media audio effects: Slowed (chill/dark), Slowed+Reverb (ethereal ambience), Nightcore (energetic, pitched up).",
+guide_pages = [
+    {
+        "EN": ("Extend", "Loop and extend audio tracks seamlessly -- automatically detects beat-aligned loop points or lets you set them manually. Perfect for making background music longer. Supports automatic edge-beat sync or manual start/end markers."),
+        "ID": ("Extend (Perpanjang)", "Memperpanjang audio dengan loop point presisi. Auto-deteksi beat atau atur manual start/end. Cocok untuk membuat musik latar yang lebih panjang tanpa jeda."),
+        "JP": ("Extend (延长)", "オーディオをシームレスにループ延长。ビートに合わせたループポイントを自動検出または手動設定可能。BGM制作に最適。"),
     },
-    "ID": {
-        "🔁 Extend (Perpanjang)": "Perpanjang audio dengan loop point presisi. Auto-deteksi beat atau atur manual. Cocok untuk musik latar.",
-        "🎤 Separate (Pisahkan)": "Pisahkan vokal dan instrumental pakai AI Demucs. Proses hanya bagian tertentu untuk hemat waktu & memori.",
-        "🎯 Extract (Ekstrak)": "Deteksi otomatis bagian paling energik (hook/chorus) lalu ekstrak. Menggunakan Separate untuk stem bersih.",
-        "🎚️ Mix (Campur)": "Auto-ducking: musik mengecil saat ada vokal, kembali normal saat hening. Transisi halus untuk natural.",
-        "📊 Optimize (Optimalkan)": "Normalisasi loudness ke standar broadcast (-14 LUFS). Volume konsisten di YouTube, Spotify, radio.",
-        "✨ Enhance (Perbaiki)": "Kurangi noise latar (desis/dengung) dengan filter adaptif, tingkatkan kejelasan vokal dengan kompresor+EQ.",
-        "✂️ Trim (Potong)": "Hapus hening/diam dari rekaman otomatis. Mode agresif untuk jeda pendek.",
-        "🎵 Vibe (Suasana)": "Efek audio tren medsos: Slowed (chill/gelap), Slowed+Reverb (ethereal), Nightcore (energik, nada tinggi).",
+    {
+        "EN": ("Separate", "Isolate vocals and instrumental stems using the Demucs AI engine. Process only a specific time slice to save memory and time. Exports as clean separate files ready for remixing or karaoke."),
+        "ID": ("Separate (Pisahkan)", "Pisahkan vokal dan instrumental menggunakan AI Demucs. Proses hanya potongan waktu tertentu untuk hemat memori. Ekspor sebagai file terpisah siap pakai."),
+        "JP": ("Separate (分離)", "Demucs AIエンジンを使用してボーカルと楽器を分離。特定の時間範囲のみ処理してメモリと時間を節約。"),
     },
-    "JP": {
-        "🔁 Extend（延長）": "オーディオをシームレスにループ・延長。ビートに合わせたループポイントを自動検出または手動設定。",
-        "🎤 Separate（分離）": "Demucs AIでボーカルと楽器を分離。特定範囲のみ処理して時間とメモリを節約。",
-        "🎯 Extract（抽出）": "曲の最も盛り上がる部分（フック/サビ）を自動検出して抽出。Separateでクリーンなステムを出力。",
-        "🎚️ Mix（ミックス）": "オートダッキング：ボーカル検出時にBGMを下げ、無音時に戻す。スムーズなトランジション。",
-        "📊 Optimize（最適化）": "放送規格LUFS（デフォルト-14）に正規化。YouTube、Spotify、ラジオで一貫した音量。",
-        "✨ Enhance（強化）": "適応フィルターでノイズ（ヒス/ハム）を低減、コンプレッサー+EQで声を明瞭化。",
-        "✂️ Trim（トリム）": "録音から無音部分を自動検出して削除。アグレッシブモードで短い間隔も除去。",
-        "🎵 Vibe（雰囲気）": "SNS向けエフェクト：Slowed（落ち着いた雰囲気）、Slowed+Reverb（幻想的）、Nightcore（元気な雰囲気）。",
+    {
+        "EN": ("Extract", "Automatically detect the most energetic part of a song (the hook or chorus) and extract it. Uses Separate internally to produce clean vocal and instrumental stems of the hook."),
+        "ID": ("Extract (Ekstrak)", "Deteksi otomatis bagian paling energik dari lagu (hook atau chorus) lalu ekstrak. Menggunakan Separate untuk menghasilkan stem vokal dan instrumental yang bersih."),
+        "JP": ("Extract (抽出)", "曲の最も盛り上がる部分（フックまたはサビ）を自動検出して抽出。Separateを使用してクリーンなステムを出力。"),
     },
+    {
+        "EN": ("Mix", "Auto-ducking: lowers background music when voice is detected, raises it back during silence. Features smooth attack and release for natural-sounding transitions. Ideal for podcasts, voiceovers, and live streaming."),
+        "ID": ("Mix (Campur)", "Auto-ducking: musik latar otomatis mengecil saat ada suara vokal, kembali normal saat hening. Dilengkapi transisi halus (attack/release) untuk hasil natural. Cocok untuk podcast, voiceover, dan live streaming."),
+        "JP": ("Mix (ミックス)", "オートダッキング：ボーカル検出時にBGMを下げ、無音時に戻す。スムーズなアタック/リリースで自然なトランジション。ポッドキャストや配信に最適。"),
+    },
+    {
+        "EN": ("Optimize", "Normalize audio to broadcast-standard LUFS loudness (default -14 LUFS). Ensures consistent volume levels across platforms like YouTube, Spotify, radio, and podcast directories."),
+        "ID": ("Optimize (Optimalkan)", "Normalisasi loudness ke standar broadcast (-14 LUFS default). Volume konsisten di YouTube, Spotify, radio, dan direktori podcast."),
+        "JP": ("Optimize (最適化)", "放送規格のLUFSラウドネス（デフォルト-14 LUFS）に正規化。YouTube、Spotify、ラジオで一貫した音量を実現。"),
+    },
+    {
+        "EN": ("Enhance", "Reduce background noise (hiss, hum, ambient room tone) with adaptive filtering. Boost voice clarity using compressor and EQ. One-click cleanup for vocal recordings and field audio."),
+        "ID": ("Enhance (Perbaiki)", "Kurangi noise latar (desis, dengung, suara ruangan) dengan filter adaptif. Tingkatkan kejelasan vokal dengan kompresor dan EQ. Pembersihan instan untuk rekaman vokal."),
+        "JP": ("Enhance (強化)", "適応フィルターでノイズ（ヒス、ハム、環境音）を低減。コンプレッサーとEQで声を明瞭化。ボーカル録音のワンクリック補正。"),
+    },
+    {
+        "EN": ("Trim", "Automatically detect and remove silence and dead air from recordings. Aggressive mode removes shorter pauses for tighter pacing. Perfect for cleaning up podcasts, voice messages, and interviews."),
+        "ID": ("Trim (Potong)", "Deteksi dan hapus hening dan jeda mati dari rekaman secara otomatis. Mode agresif untuk jeda pendek. Cocok untuk merapikan podcast, pesan suara, dan wawancara."),
+        "JP": ("Trim (トリム)", "録音から無音部分を自動検出して削除。アグレッシブモードで短い間隔も除去。ポッドキャストやボイスメッセージの整形に最適。"),
+    },
+    {
+        "EN": ("Vibe", "Apply social media audio effects: Slowed (chill, dark atmosphere without reverb), Slowed+Reverb (ethereal with echo ambience), or Nightcore (energetic, pitched up). Ready for TikTok, Reels, and Shorts."),
+        "ID": ("Vibe (Suasana)", "Efek audio tren media sosial: Slowed (suasana chill/gelap tanpa reverb), Slowed+Reverb (ethereal dengan gema), atau Nightcore (energik, nada tinggi). Siap untuk TikTok, Reels, dan Shorts."),
+        "JP": ("Vibe (雰囲気)", "SNS向けオーディオエフェクト：Slowed（落ち着いた雰囲気、リバーブなし）、Slowed+Reverb（幻想的なエコー）、Nightcore（元気な雰囲気）。TikTok、Reels、Shorts対応。"),
+    },
+]
+
+tips = {
+    "EN": "Tips\n- Upload any audio file (.mp3, .wav, .ogg, .m4a, .flac)\n- Processed files appear in the right column -- click to download\n- All processing runs locally on your device -- nothing leaves your computer",
+    "ID": "Tips\n- Upload file audio (.mp3, .wav, .ogg, .m4a, .flac)\n- File hasil muncul di kolom kanan -- klik untuk download\n- Semua proses berjalan lokal di perangkat Anda -- tidak ada yang diunggah ke cloud",
+    "JP": "Tips\n- オーディオファイル(.mp3, .wav, .ogg, .m4a, .flac)をアップロード\n- 処理結果は右側に表示 -- クリックしてダウンロード\n- すべての処理はローカルデバイス上で実行 -- クラウドに送信されません",
 }
 
+author_text = {
+    "EN": "Museic is created by Arhylsion (https://github.com/arhylsion)",
+    "ID": "Museic dibuat oleh Arhylsion (https://github.com/arhylsion)",
+    "JP": "Museic is created by Arhylsion (https://github.com/arhylsion)",
+}
+
+total_pages = len(guide_pages)
+
+
+def render_page(lang, page):
+    page = max(1, min(page, total_pages))
+    entry = guide_pages[page - 1]
+    title, desc = entry[lang]
+    return f"### Page {page} / {total_pages}\n\n**{title}**\n\n{desc}"
+
+
+def render_tips(lang):
+    return f"### {tips[lang]}\n\n---\n### Author\n{author_text[lang]}"
+
+
 with gr.Blocks(title="Museic") as demo:
-    gr.Markdown(
-        """
-        # 🎵 Museic Audio Engineering Toolkit
-        Upload audio, adjust parameters, and process — all locally on your device.
-        """
-    )
+    with gr.Row():
+        with gr.Column(scale=1):
+            gr.Markdown("# Museic Audio Engineering Toolkit")
+        with gr.Column(scale=0, min_width=80):
+            guide_btn = gr.Button("Guide", size="sm", variant="secondary")
+
+    gr.Markdown("Upload audio, adjust parameters, and process -- all locally on your device.")
+
+    guide_panel = gr.Column(visible=False)
+    with guide_panel:
+        gr.Markdown("## Guide / Panduan / ガイド")
+        with gr.Row():
+            guide_lang = gr.Radio(label="Language / Bahasa / 言語", choices=["EN", "ID", "JP"], value="EN", scale=0)
+            guide_page = gr.Number(label="Page", value=1, minimum=1, maximum=total_pages, step=1, scale=0)
+        guide_content = gr.Markdown(render_page("EN", 1))
+        guide_tips = gr.Markdown(render_tips("EN"))
+        with gr.Row():
+            guide_prev = gr.Button("Previous", size="sm", scale=0)
+            guide_next = gr.Button("Next", size="sm", scale=0)
+            guide_close = gr.Button("Close", size="sm", variant="secondary", scale=0)
+
+    guide_visible = gr.State(False)
+
+    def toggle_guide(visible):
+        return gr.update(visible=not visible), not visible
+
+    def close_guide():
+        return gr.update(visible=False), False
+
+    guide_btn.click(toggle_guide, inputs=guide_visible, outputs=[guide_panel, guide_visible])
+    guide_close.click(close_guide, outputs=[guide_panel, guide_visible])
+
+    def update_guide(lang, page):
+        return render_page(lang, page)
+
+    def change_page(lang, page, delta):
+        new_page = max(1, min(page + delta, total_pages))
+        return new_page, render_page(lang, new_page)
+
+    guide_lang.change(update_guide, inputs=[guide_lang, guide_page], outputs=guide_content)
+    guide_page.change(update_guide, inputs=[guide_lang, guide_page], outputs=guide_content)
+    guide_lang.change(lambda l: render_tips(l), inputs=guide_lang, outputs=guide_tips)
+    guide_prev.click(change_page, inputs=[guide_lang, guide_page, gr.State(-1)], outputs=[guide_page, guide_content])
+    guide_next.click(change_page, inputs=[guide_lang, guide_page, gr.State(1)], outputs=[guide_page, guide_content])
+
+    gr.Markdown("---")
 
     with gr.Tabs():
-        with gr.Tab("🔁 Extend"):
+        with gr.Tab("Extend"):
             with gr.Row():
                 with gr.Column():
                     extend_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
@@ -120,7 +196,7 @@ with gr.Blocks(title="Museic") as demo:
                 return log, result if result else None
             extend_btn.click(process_extend, inputs=[extend_input, extend_auto, extend_start, extend_end, extend_repeat], outputs=[extend_log, extend_output])
 
-        with gr.Tab("🎤 Separate"):
+        with gr.Tab("Separate"):
             with gr.Row():
                 with gr.Column():
                     separate_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
@@ -143,7 +219,7 @@ with gr.Blocks(title="Museic") as demo:
                 return log, files
             separate_btn.click(process_separate, inputs=[separate_input, separate_start, separate_end, separate_format], outputs=[separate_log, separate_output])
 
-        with gr.Tab("🎯 Extract"):
+        with gr.Tab("Extract"):
             with gr.Row():
                 with gr.Column():
                     extract_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
@@ -165,7 +241,7 @@ with gr.Blocks(title="Museic") as demo:
                 return log, files
             extract_btn.click(process_extract, inputs=[extract_input, extract_length, extract_format], outputs=[extract_log, extract_output])
 
-        with gr.Tab("🎚️ Mix"):
+        with gr.Tab("Mix"):
             with gr.Row():
                 with gr.Column():
                     mix_voice = gr.File(label="Voice Track", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
@@ -188,7 +264,7 @@ with gr.Blocks(title="Museic") as demo:
                 return log, result if result else None
             mix_btn.click(process_mix, inputs=[mix_voice, mix_bgm], outputs=[mix_log, mix_output])
 
-        with gr.Tab("📊 Optimize"):
+        with gr.Tab("Optimize"):
             with gr.Row():
                 with gr.Column():
                     optimize_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
@@ -208,7 +284,7 @@ with gr.Blocks(title="Museic") as demo:
                 return log, result if result else None
             optimize_btn.click(process_optimize, inputs=[optimize_input, optimize_lufs], outputs=[optimize_log, optimize_output])
 
-        with gr.Tab("✨ Enhance"):
+        with gr.Tab("Enhance"):
             with gr.Row():
                 with gr.Column():
                     enhance_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
@@ -231,7 +307,7 @@ with gr.Blocks(title="Museic") as demo:
                 return log, result if result else None
             enhance_btn.click(process_enhance, inputs=[enhance_input, enhance_denoise, enhance_boost], outputs=[enhance_log, enhance_output])
 
-        with gr.Tab("✂️ Trim"):
+        with gr.Tab("Trim"):
             with gr.Row():
                 with gr.Column():
                     trim_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
@@ -251,7 +327,7 @@ with gr.Blocks(title="Museic") as demo:
                 return log, result if result else None
             trim_btn.click(process_trim, inputs=[trim_input, trim_aggressive], outputs=[trim_log, trim_output])
 
-        with gr.Tab("🎵 Vibe"):
+        with gr.Tab("Vibe"):
             with gr.Row():
                 with gr.Column():
                     vibe_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
@@ -270,31 +346,6 @@ with gr.Blocks(title="Museic") as demo:
                     return f"{log}\nError: {err}", None
                 return log, result if result else None
             vibe_btn.click(process_vibe_fn, inputs=[vibe_input, vibe_mode], outputs=[vibe_log, vibe_output])
-
-        with gr.Tab("📖 Guide"):
-            lang = gr.Radio(label="Language / Bahasa / 言語", choices=["EN", "ID", "JP"], value="EN", scale=0)
-
-            tips = {
-                "EN": "💡 Tips\n- Upload any audio file (.mp3, .wav, .ogg, .m4a, .flac)\n- Processed files appear in the right column — click to download\n- All processing runs **locally on your device** — nothing is uploaded to the cloud",
-                "ID": "💡 Tips\n- Upload file audio (.mp3, .wav, .ogg, .m4a, .flac)\n- File hasil muncul di kolom kanan — klik untuk download\n- Semua proses berjalan **lokal di perangkat Anda** — tidak ada yang diunggah ke cloud",
-                "JP": "💡 ヒント\n- オーディオファイル（.mp3, .wav, .ogg, .m4a, .flac）をアップロード\n- 処理結果は右側に表示 — クリックしてダウンロード\n- すべての処理は**ローカルデバイス上で実行** — クラウドに送信されません",
-            }
-            author = {
-                "EN": "**Museic** is created by [Arhylsion](https://github.com/arhylsion).",
-                "ID": "**Museic** dibuat oleh [Arhylsion](https://github.com/arhylsion).",
-                "JP": "**Museic** is created by [Arhylsion](https://github.com/arhylsion).",
-            }
-
-            def render_guide(language):
-                md = ""
-                for title, desc in guide_text[language].items():
-                    md += f"### {title}\n{desc}\n\n"
-                md += f"---\n### {tips[language]}\n\n"
-                md += f"---\n### 👤 Author\n{author[language]}\n\n"
-                return md
-
-            guide_md = gr.Markdown(render_guide("EN"))
-            lang.change(lambda l: render_guide(l), inputs=lang, outputs=guide_md)
 
     gr.Markdown("All processing runs locally. Your audio never leaves your device.")
 
