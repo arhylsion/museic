@@ -1,4 +1,3 @@
-import os
 import librosa
 import numpy as np
 from museic.core.separator import process_separation
