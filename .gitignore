@@ -29,3 +29,4 @@ models/
 textual.log
 .DS_Store
 Thumbs.db
+tmp_*.py
