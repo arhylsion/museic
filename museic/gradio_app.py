@@ -113,19 +113,27 @@ def render_tips(lang):
 
 
 CSS = """
-/* sidebar radio */
-.sidebar-radio label { min-height: 38px; display: flex; align-items: center; }
-@media (max-width: 768px) {
-  .sidebar-radio { display: flex; flex-wrap: wrap; gap: 1px; }
-  .sidebar-radio label { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; }
-}
+/* sidebar full width */
+.sidebar-col, .sidebar-col .block { width: 100% !important; }
+.sidebar-radio, .sidebar-radio .wrap { width: 100%; }
+.sidebar-radio label { width: 100%; min-height: 38px; display: flex; align-items: center; }
+.sidebar-divider { margin: 4px 0; }
+.sidebar-guide-btn { width: 100%; min-height: 38px; border: none !important; box-shadow: none !important; justify-content: flex-start; padding: 0 12px; font-weight: 400; font-size: 14px; background: transparent !important; cursor: pointer; }
+.sidebar-guide-btn:hover { background: rgba(128,128,128,0.1) !important; }
 /* guide lang toggle */
 .lang-select .wrap { border: none !important; box-shadow: none !important; background: transparent !important; gap: 0 !important; padding: 0 !important; }
 .lang-select label { border: none !important; box-shadow: none !important; padding: 2px 8px !important; margin: 0 !important; background: transparent !important; font-size: 13px; font-weight: 500; text-transform: lowercase; }
-.lang-select label.selected, .lang-select input:checked + span { font-weight: 700; text-decoration: underline; }
+.lang-select input:checked + span { font-weight: 700; text-decoration: underline; }
 .lang-select input[type="radio"] { position: absolute !important; opacity: 0 !important; width: 0 !important; height: 0 !important; }
-/* guide content area */
+/* guide content */
 .guide-content { min-height: 280px; }
+/* mobile */
+@media (max-width: 768px) {
+  .sidebar-col { min-width: 100% !important; max-width: 100% !important; }
+  .sidebar-radio, .sidebar-radio .wrap { width: 100% !important; }
+  .sidebar-radio label { flex: 1 1 auto; }
+  .sidebar-guide-btn { width: 100% !important; }
+}
 """
 
 with gr.Blocks(title="Museic") as demo:
@@ -135,10 +143,12 @@ with gr.Blocks(title="Museic") as demo:
     with gr.Row(equal_height=True):
         with gr.Column(scale=0, min_width=200, elem_classes="sidebar-col"):
             tool_radio = gr.Radio(
-                choices=TOOLS + ["Guide"], value="Extend",
+                choices=TOOLS, value="Extend",
                 label="", show_label=False,
                 elem_classes="sidebar-radio",
             )
+            gr.Markdown("---", elem_classes="sidebar-divider")
+            guide_btn = gr.Button("Guide", elem_classes="sidebar-guide-btn", variant="secondary")
 
         with gr.Column(scale=1):
             with gr.Column(visible=True) as extend_panel:
@@ -338,12 +348,15 @@ with gr.Blocks(title="Museic") as demo:
     gr.Markdown("All processing runs locally. Your audio never leaves your device.")
 
     panels = [extend_panel, separate_panel, extract_panel, mix_panel, optimize_panel, enhance_panel, trim_panel, vibe_panel, guide_panel]
-    choices = TOOLS + ["Guide"]
 
-    def switch_tab(selected):
-        return tuple(gr.update(visible=(c == selected)) for c in choices)
+    def switch_tab(tool):
+        return tuple([gr.update(visible=(t == tool)) for t in TOOLS] + [gr.update(visible=False)])
+
+    def show_guide():
+        return tuple([gr.update(visible=False)] * 8 + [gr.update(visible=True)])
 
     tool_radio.change(switch_tab, inputs=tool_radio, outputs=panels)
+    guide_btn.click(show_guide, outputs=panels)
 
     guide_page = gr.State(1)
 
