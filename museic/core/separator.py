@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import gc
 import shutil
@@ -6,38 +7,49 @@ from pathlib import Path
 from pydub import AudioSegment
 from museic.utils.helpers import cleanup_temp_files
 
+
+def _sanitize_name(name):
+    return re.sub(r'[^\w\-_. ]', '_', name).strip()
+
+
 def process_separation(input_path, output_dir="output", start_sec=0, end_sec=10, target_format="mp3"):
     os.makedirs(output_dir, exist_ok=True)
-    
-    song_name = Path(input_path).stem
+
+    raw_name = Path(input_path).stem
+    song_name = _sanitize_name(raw_name)
     temp_wav = os.path.join(output_dir, f"{song_name}_temp.wav")
     final_song_dir = os.path.join(output_dir, song_name)
 
     try:
         print("Extracting target slice")
         full_audio = AudioSegment.from_file(input_path)
-        
+
         start_ms = int(start_sec * 1000)
         end_ms = int(end_sec * 1000) if end_sec > 0 else len(full_audio)
-        
+
         segment = full_audio[start_ms:end_ms]
         segment.export(temp_wav, format="wav")
-        
+
         del full_audio
         del segment
         gc.collect()
 
         print("Running Demucs engine")
-        subprocess.run([
-            "demucs", 
+        result = subprocess.run([
+            "demucs",
             "--two-stems", "vocals",
-            "-n", "mdx_extra_q", 
+            "-n", "mdx_extra_q",
             "-j", "4",
             "--shifts", "0",
             "--overlap", "0.1",
-            "-o", output_dir, 
+            "-o", output_dir,
             temp_wav
-        ], check=True, stdout=subprocess.DEVNULL)
+        ], capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"Demucs failed (exit {result.returncode}):\n"
+                f"{result.stderr.strip() or result.stdout.strip() or 'Unknown error'}"
+            )
 
         print("Processing separated stems")
         demucs_result_dir = os.path.join(output_dir, "mdx_extra_q", f"{song_name}_temp")

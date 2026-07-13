@@ -2,19 +2,22 @@ import os
 import subprocess
 from pathlib import Path
 
-def process_vibe(input_path, output_dir="output", slowed=False, nightcore=False):
+def process_vibe(input_path, output_dir="output", slowed=False, nightcore=False, slowed_reverb=False):
     os.makedirs(output_dir, exist_ok=True)
     song_name = Path(input_path).stem
-    
+
     filters = []
     if slowed:
         output_path = os.path.join(output_dir, f"{song_name}_slowed.mp3")
-        filters.append("asetrate=44100*0.85,aresample=44100,aecho=0.8:0.9:1000:0.3")
+        filters.append("asetrate=44100*0.85,aresample=44100")
+    elif slowed_reverb:
+        output_path = os.path.join(output_dir, f"{song_name}_slowed_reverb.mp3")
+        filters.append("asetrate=44100*0.85,aresample=44100,aecho=0.8:0.7:40:0.4|aecho=0.6:0.5:60:0.3")
     elif nightcore:
         output_path = os.path.join(output_dir, f"{song_name}_nightcore.mp3")
         filters.append("asetrate=44100*1.25,aresample=44100")
     else:
-        raise ValueError("Must select either slowed or nightcore")
+        raise ValueError("Must select slowed, slowed_reverb, or nightcore")
 
     print("Applying dynamic tempo and spatial filters")
     
