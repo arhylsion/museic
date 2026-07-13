@@ -12,7 +12,7 @@ def process_vibe(input_path, output_dir="output", slowed=False, nightcore=False,
         filters.append("asetrate=44100*0.85,aresample=44100")
     elif slowed_reverb:
         output_path = os.path.join(output_dir, f"{song_name}_slowed_reverb.mp3")
-        filters.append("asetrate=44100*0.85,aresample=44100,aecho=0.8:0.7:40:0.4|aecho=0.6:0.5:60:0.3")
+        filters.append("asetrate=44100*0.85,aresample=44100,aecho=0.8:0.7:40|60:0.4|0.3")
     elif nightcore:
         output_path = os.path.join(output_dir, f"{song_name}_nightcore.mp3")
         filters.append("asetrate=44100*1.25,aresample=44100")

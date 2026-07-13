@@ -20,6 +20,7 @@ OUTPUT_DIR = os.path.abspath("output")
 os.makedirs(INPUT_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+TOOLS = ["Extend", "Separate", "Extract", "Mix", "Optimize", "Enhance", "Trim", "Vibe"]
 
 def save_file(file_obj):
     if file_obj is None:
@@ -27,7 +28,6 @@ def save_file(file_obj):
     dest = os.path.join(INPUT_DIR, os.path.basename(file_obj.name))
     shutil.copy2(file_obj.name, dest)
     return dest, None
-
 
 def run_capture(func, *args, **kwargs):
     log_capture = io.StringIO()
@@ -37,7 +37,6 @@ def run_capture(func, *args, **kwargs):
             return result, log_capture.getvalue(), None
         except Exception as e:
             return None, log_capture.getvalue(), str(e)
-
 
 def collect_output_files(dir_path):
     if not dir_path or not os.path.exists(dir_path):
@@ -49,7 +48,6 @@ def collect_output_files(dir_path):
         for f in filenames:
             files.append(os.path.join(root, f))
     return files if files else dir_path
-
 
 guide_pages = [
     {
@@ -95,15 +93,9 @@ guide_pages = [
 ]
 
 tips = {
-    "EN": "Tips\n- Upload any audio file (.mp3, .wav, .ogg, .m4a, .flac)\n- Processed files appear in the right column -- click to download\n- All processing runs locally on your device -- nothing leaves your computer",
-    "ID": "Tips\n- Upload file audio (.mp3, .wav, .ogg, .m4a, .flac)\n- File hasil muncul di kolom kanan -- klik untuk download\n- Semua proses berjalan lokal di perangkat Anda -- tidak ada yang diunggah ke cloud",
+    "EN": "Tips\n- Upload any audio file (.mp3, .wav, .ogg, .m4a, .flac)\n- Processed files appear on the right -- click to download\n- All processing runs locally on your device -- nothing leaves your computer",
+    "ID": "Tips\n- Upload file audio (.mp3, .wav, .ogg, .m4a, .flac)\n- File hasil muncul di kanan -- klik untuk download\n- Semua proses berjalan lokal di perangkat Anda -- tidak ada yang diunggah ke cloud",
     "JP": "Tips\n- オーディオファイル(.mp3, .wav, .ogg, .m4a, .flac)をアップロード\n- 処理結果は右側に表示 -- クリックしてダウンロード\n- すべての処理はローカルデバイス上で実行 -- クラウドに送信されません",
-}
-
-author_text = {
-    "EN": "Museic is created by Arhylsion (https://github.com/arhylsion)",
-    "ID": "Museic dibuat oleh Arhylsion (https://github.com/arhylsion)",
-    "JP": "Museic is created by Arhylsion (https://github.com/arhylsion)",
 }
 
 total_pages = len(guide_pages)
@@ -113,45 +105,233 @@ def render_page(lang, page):
     page = max(1, min(page, total_pages))
     entry = guide_pages[page - 1]
     title, desc = entry[lang]
-    return f"### Page {page} / {total_pages}\n\n**{title}**\n\n{desc}"
+    return f"**Page {page} / {total_pages}**\n\n### {title}\n\n{desc}"
 
 
 def render_tips(lang):
-    return f"### {tips[lang]}\n\n---\n### Author\n{author_text[lang]}"
+    return f"### {tips[lang]}"
 
 
-with gr.Blocks(title="Museic") as demo:
-    with gr.Row():
-        with gr.Column(scale=1):
-            gr.Markdown("# Museic Audio Engineering Toolkit")
-        with gr.Column(scale=0, min_width=80):
-            guide_btn = gr.Button("Guide", size="sm", variant="secondary")
+CSS = """
+@media (max-width: 768px) {
+  .sidebar-col .radio-group { display: flex; flex-wrap: wrap; gap: 2px; }
+  .sidebar-col .radio-group label { padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; }
+}
+"""
 
+with gr.Blocks(title="Museic", head=f"<style>{CSS}</style>") as demo:
+    gr.Markdown("## Museic Audio Engineering Toolkit")
     gr.Markdown("Upload audio, adjust parameters, and process -- all locally on your device.")
 
-    guide_panel = gr.Column(visible=False)
-    with guide_panel:
-        gr.Markdown("## Guide / Panduan / ガイド")
-        with gr.Row():
-            guide_lang = gr.Radio(label="Language / Bahasa / 言語", choices=["EN", "ID", "JP"], value="EN", scale=0)
-            guide_page = gr.Number(label="Page", value=1, minimum=1, maximum=total_pages, step=1, scale=0)
-        guide_content = gr.Markdown(render_page("EN", 1))
-        guide_tips = gr.Markdown(render_tips("EN"))
-        with gr.Row():
-            guide_prev = gr.Button("Previous", size="sm", scale=0)
-            guide_next = gr.Button("Next", size="sm", scale=0)
-            guide_close = gr.Button("Close", size="sm", variant="secondary", scale=0)
+    with gr.Row(equal_height=True):
+        with gr.Column(scale=0, min_width=200, elem_classes="sidebar-col"):
+            tool_radio = gr.Radio(
+                choices=TOOLS, value="Extend",
+                label="", show_label=False,
+                elem_classes="radio-group",
+            )
+            with gr.Accordion("Guide", open=False):
+                guide_lang = gr.Radio(
+                    choices=["EN", "ID", "JP"], value="EN",
+                    label="", show_label=False,
+                )
+                guide_content = gr.Markdown(render_page("EN", 1))
+                guide_tips = gr.Markdown(render_tips("EN"))
+                with gr.Row():
+                    guide_prev = gr.Button("Prev", size="sm", scale=0)
+                    guide_next = gr.Button("Next", size="sm", scale=0)
 
-    guide_visible = gr.State(False)
+        with gr.Column(scale=1):
+            with gr.Column(visible=True) as extend_panel:
+                with gr.Row():
+                    with gr.Column():
+                        extend_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
+                        extend_auto = gr.Checkbox(label="Auto-detect loop points", value=True)
+                        extend_start = gr.Number(label="Start (seconds)", value=0, minimum=0, visible=False)
+                        extend_end = gr.Number(label="End (seconds)", value=0, minimum=0, visible=False)
+                        extend_repeat = gr.Number(label="Repeat Count", value=4, minimum=1, maximum=50, step=1)
+                        extend_btn = gr.Button("Extend Track", variant="primary")
+                    with gr.Column():
+                        extend_log = gr.Textbox(label="Log", lines=10)
+                        extend_output = gr.File(label="Download Extended Audio", file_count="single")
 
-    def toggle_guide(visible):
-        return gr.update(visible=not visible), not visible
+                def on_extend_auto_change(val):
+                    return gr.update(visible=not val), gr.update(visible=not val)
+                extend_auto.change(on_extend_auto_change, inputs=extend_auto, outputs=[extend_start, extend_end])
 
-    def close_guide():
-        return gr.update(visible=False), False
+                def process_extend(file, auto, start, end, repeat):
+                    path, err = save_file(file)
+                    if err:
+                        return err, None
+                    result, log, err = run_capture(process_extension, input_path=path, start_sec=start, end_sec=end, auto=auto, repeat=int(repeat))
+                    if err:
+                        return f"{log}\nError: {err}", None
+                    return log, result if result else None
+                extend_btn.click(process_extend, inputs=[extend_input, extend_auto, extend_start, extend_end, extend_repeat], outputs=[extend_log, extend_output])
 
-    guide_btn.click(toggle_guide, inputs=guide_visible, outputs=[guide_panel, guide_visible])
-    guide_close.click(close_guide, outputs=[guide_panel, guide_visible])
+            with gr.Column(visible=False) as separate_panel:
+                with gr.Row():
+                    with gr.Column():
+                        separate_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
+                        separate_start = gr.Number(label="Start (seconds)", value=0, minimum=0)
+                        separate_end = gr.Number(label="End (seconds)", value=10, minimum=1)
+                        separate_format = gr.Radio(label="Export Format", choices=["mp3", "wav", "ogg"], value="mp3")
+                        separate_btn = gr.Button("Separate Stems", variant="primary")
+                    with gr.Column():
+                        separate_log = gr.Textbox(label="Log", lines=10)
+                        separate_output = gr.File(label="Download Stems", file_count="multiple")
+
+                def process_separate(file, start, end, fmt):
+                    path, err = save_file(file)
+                    if err:
+                        return err, None
+                    result, log, err = run_capture(process_separation, input_path=path, start_sec=start, end_sec=end, target_format=fmt)
+                    if err:
+                        return f"{log}\nError: {err}", None
+                    files = collect_output_files(result)
+                    return log, files
+                separate_btn.click(process_separate, inputs=[separate_input, separate_start, separate_end, separate_format], outputs=[separate_log, separate_output])
+
+            with gr.Column(visible=False) as extract_panel:
+                with gr.Row():
+                    with gr.Column():
+                        extract_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
+                        extract_length = gr.Slider(label="Clip Length (seconds)", minimum=5, maximum=60, value=30, step=5)
+                        extract_format = gr.Radio(label="Export Format", choices=["mp3", "wav", "ogg"], value="mp3")
+                        extract_btn = gr.Button("Extract Hook", variant="primary")
+                    with gr.Column():
+                        extract_log = gr.Textbox(label="Log", lines=10)
+                        extract_output = gr.File(label="Download Hook", file_count="multiple")
+
+                def process_extract(file, length, fmt):
+                    path, err = save_file(file)
+                    if err:
+                        return err, None
+                    result, log, err = run_capture(process_extraction, input_path=path, duration=int(length), export_format=fmt)
+                    if err:
+                        return f"{log}\nError: {err}", None
+                    files = collect_output_files(result)
+                    return log, files
+                extract_btn.click(process_extract, inputs=[extract_input, extract_length, extract_format], outputs=[extract_log, extract_output])
+
+            with gr.Column(visible=False) as mix_panel:
+                with gr.Row():
+                    with gr.Column():
+                        mix_voice = gr.File(label="Voice Track", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
+                        mix_bgm = gr.File(label="Background Music", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
+                        mix_btn = gr.Button("Mix Tracks", variant="primary")
+                    with gr.Column():
+                        mix_log = gr.Textbox(label="Log", lines=10)
+                        mix_output = gr.File(label="Download Mixed Audio", file_count="single")
+
+                def process_mix(voice, bgm):
+                    voice_path, err = save_file(voice)
+                    if err:
+                        return err, None
+                    bgm_path, err = save_file(bgm)
+                    if err:
+                        return err, None
+                    result, log, err = run_capture(process_ducking, voice_path=voice_path, bgm_path=bgm_path)
+                    if err:
+                        return f"{log}\nError: {err}", None
+                    return log, result if result else None
+                mix_btn.click(process_mix, inputs=[mix_voice, mix_bgm], outputs=[mix_log, mix_output])
+
+            with gr.Column(visible=False) as optimize_panel:
+                with gr.Row():
+                    with gr.Column():
+                        optimize_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
+                        optimize_lufs = gr.Slider(label="Target LUFS", minimum=-30, maximum=-8, value=-14, step=0.5)
+                        optimize_btn = gr.Button("Optimize", variant="primary")
+                    with gr.Column():
+                        optimize_log = gr.Textbox(label="Log", lines=10)
+                        optimize_output = gr.File(label="Download Optimized Audio", file_count="single")
+
+                def process_optimize(file, lufs):
+                    path, err = save_file(file)
+                    if err:
+                        return err, None
+                    result, log, err = run_capture(process_optimization, input_path=path, target_lufs=lufs)
+                    if err:
+                        return f"{log}\nError: {err}", None
+                    return log, result if result else None
+                optimize_btn.click(process_optimize, inputs=[optimize_input, optimize_lufs], outputs=[optimize_log, optimize_output])
+
+            with gr.Column(visible=False) as enhance_panel:
+                with gr.Row():
+                    with gr.Column():
+                        enhance_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
+                        enhance_denoise = gr.Checkbox(label="Denoise (reduce background hiss/hum)", value=True)
+                        enhance_boost = gr.Checkbox(label="Boost voice (compressor + EQ)", value=False)
+                        enhance_btn = gr.Button("Enhance", variant="primary")
+                    with gr.Column():
+                        enhance_log = gr.Textbox(label="Log", lines=10)
+                        enhance_output = gr.File(label="Download Enhanced Audio", file_count="single")
+
+                def process_enhance(file, denoise, boost):
+                    path, err = save_file(file)
+                    if err:
+                        return err, None
+                    if not denoise and not boost:
+                        return "Select at least Denoise or Boost", None
+                    result, log, err = run_capture(process_enhancement, input_path=path, denoise=denoise, boost=boost)
+                    if err:
+                        return f"{log}\nError: {err}", None
+                    return log, result if result else None
+                enhance_btn.click(process_enhance, inputs=[enhance_input, enhance_denoise, enhance_boost], outputs=[enhance_log, enhance_output])
+
+            with gr.Column(visible=False) as trim_panel:
+                with gr.Row():
+                    with gr.Column():
+                        trim_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
+                        trim_aggressive = gr.Checkbox(label="Aggressive mode (remove shorter pauses)", value=False)
+                        trim_btn = gr.Button("Trim Silence", variant="primary")
+                    with gr.Column():
+                        trim_log = gr.Textbox(label="Log", lines=10)
+                        trim_output = gr.File(label="Download Trimmed Audio", file_count="single")
+
+                def process_trim(file, aggressive):
+                    path, err = save_file(file)
+                    if err:
+                        return err, None
+                    result, log, err = run_capture(process_trimming, input_path=path, aggressive=aggressive)
+                    if err:
+                        return f"{log}\nError: {err}", None
+                    return log, result if result else None
+                trim_btn.click(process_trim, inputs=[trim_input, trim_aggressive], outputs=[trim_log, trim_output])
+
+            with gr.Column(visible=False) as vibe_panel:
+                with gr.Row():
+                    with gr.Column():
+                        vibe_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
+                        vibe_mode = gr.Radio(label="Effect", choices=["Slowed", "Slowed + Reverb", "Nightcore"], value="Slowed")
+                        vibe_btn = gr.Button("Apply Effect", variant="primary")
+                    with gr.Column():
+                        vibe_log = gr.Textbox(label="Log", lines=10)
+                        vibe_output = gr.File(label="Download Modified Audio", file_count="single")
+
+                def process_vibe_fn(file, mode):
+                    path, err = save_file(file)
+                    if err:
+                        return err, None
+                    result, log, err = run_capture(process_vibe, input_path=path, slowed=(mode=="Slowed"), slowed_reverb=(mode=="Slowed + Reverb"), nightcore=(mode=="Nightcore"))
+                    if err:
+                        return f"{log}\nError: {err}", None
+                    return log, result if result else None
+                vibe_btn.click(process_vibe_fn, inputs=[vibe_input, vibe_mode], outputs=[vibe_log, vibe_output])
+
+    gr.Markdown("---")
+    gr.Markdown(f"Museic by Arhylsion (https://github.com/arhylsion)")
+    gr.Markdown("All processing runs locally. Your audio never leaves your device.")
+
+    panels = [extend_panel, separate_panel, extract_panel, mix_panel, optimize_panel, enhance_panel, trim_panel, vibe_panel]
+
+    def switch_tab(selected):
+        return tuple(gr.update(visible=(t == selected)) for t in TOOLS)
+
+    tool_radio.change(switch_tab, inputs=tool_radio, outputs=panels)
+
+    guide_page = gr.State(1)
 
     def update_guide(lang, page):
         return render_page(lang, page)
@@ -165,189 +345,6 @@ with gr.Blocks(title="Museic") as demo:
     guide_lang.change(lambda l: render_tips(l), inputs=guide_lang, outputs=guide_tips)
     guide_prev.click(change_page, inputs=[guide_lang, guide_page, gr.State(-1)], outputs=[guide_page, guide_content])
     guide_next.click(change_page, inputs=[guide_lang, guide_page, gr.State(1)], outputs=[guide_page, guide_content])
-
-    gr.Markdown("---")
-
-    with gr.Tabs():
-        with gr.Tab("Extend"):
-            with gr.Row():
-                with gr.Column():
-                    extend_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
-                    extend_auto = gr.Checkbox(label="Auto-detect loop points", value=True)
-                    extend_start = gr.Number(label="Start (seconds)", value=0, minimum=0, visible=False)
-                    extend_end = gr.Number(label="End (seconds)", value=0, minimum=0, visible=False)
-                    extend_repeat = gr.Number(label="Repeat Count", value=4, minimum=1, maximum=50, step=1)
-                    extend_btn = gr.Button("Extend Track", variant="primary")
-                with gr.Column():
-                    extend_log = gr.Textbox(label="Log", lines=10)
-                    extend_output = gr.File(label="Download Extended Audio", file_count="single")
-
-            def on_extend_auto_change(val):
-                return gr.update(visible=not val), gr.update(visible=not val)
-            extend_auto.change(on_extend_auto_change, inputs=extend_auto, outputs=[extend_start, extend_end])
-
-            def process_extend(file, auto, start, end, repeat):
-                path, err = save_file(file)
-                if err:
-                    return err, None
-                result, log, err = run_capture(process_extension, input_path=path, start_sec=start, end_sec=end, auto=auto, repeat=int(repeat))
-                if err:
-                    return f"{log}\nError: {err}", None
-                return log, result if result else None
-            extend_btn.click(process_extend, inputs=[extend_input, extend_auto, extend_start, extend_end, extend_repeat], outputs=[extend_log, extend_output])
-
-        with gr.Tab("Separate"):
-            with gr.Row():
-                with gr.Column():
-                    separate_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
-                    separate_start = gr.Number(label="Start (seconds)", value=0, minimum=0)
-                    separate_end = gr.Number(label="End (seconds)", value=10, minimum=1)
-                    separate_format = gr.Radio(label="Export Format", choices=["mp3", "wav", "ogg"], value="mp3")
-                    separate_btn = gr.Button("Separate Stems", variant="primary")
-                with gr.Column():
-                    separate_log = gr.Textbox(label="Log", lines=10)
-                    separate_output = gr.File(label="Download Stems", file_count="multiple")
-
-            def process_separate(file, start, end, fmt):
-                path, err = save_file(file)
-                if err:
-                    return err, None
-                result, log, err = run_capture(process_separation, input_path=path, start_sec=start, end_sec=end, target_format=fmt)
-                if err:
-                    return f"{log}\nError: {err}", None
-                files = collect_output_files(result)
-                return log, files
-            separate_btn.click(process_separate, inputs=[separate_input, separate_start, separate_end, separate_format], outputs=[separate_log, separate_output])
-
-        with gr.Tab("Extract"):
-            with gr.Row():
-                with gr.Column():
-                    extract_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
-                    extract_length = gr.Slider(label="Clip Length (seconds)", minimum=5, maximum=60, value=30, step=5)
-                    extract_format = gr.Radio(label="Export Format", choices=["mp3", "wav", "ogg"], value="mp3")
-                    extract_btn = gr.Button("Extract Hook", variant="primary")
-                with gr.Column():
-                    extract_log = gr.Textbox(label="Log", lines=10)
-                    extract_output = gr.File(label="Download Hook", file_count="multiple")
-
-            def process_extract(file, length, fmt):
-                path, err = save_file(file)
-                if err:
-                    return err, None
-                result, log, err = run_capture(process_extraction, input_path=path, duration=int(length), export_format=fmt)
-                if err:
-                    return f"{log}\nError: {err}", None
-                files = collect_output_files(result)
-                return log, files
-            extract_btn.click(process_extract, inputs=[extract_input, extract_length, extract_format], outputs=[extract_log, extract_output])
-
-        with gr.Tab("Mix"):
-            with gr.Row():
-                with gr.Column():
-                    mix_voice = gr.File(label="Voice Track", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
-                    mix_bgm = gr.File(label="Background Music", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
-                    mix_btn = gr.Button("Mix Tracks", variant="primary")
-                with gr.Column():
-                    mix_log = gr.Textbox(label="Log", lines=10)
-                    mix_output = gr.File(label="Download Mixed Audio", file_count="single")
-
-            def process_mix(voice, bgm):
-                voice_path, err = save_file(voice)
-                if err:
-                    return err, None
-                bgm_path, err = save_file(bgm)
-                if err:
-                    return err, None
-                result, log, err = run_capture(process_ducking, voice_path=voice_path, bgm_path=bgm_path)
-                if err:
-                    return f"{log}\nError: {err}", None
-                return log, result if result else None
-            mix_btn.click(process_mix, inputs=[mix_voice, mix_bgm], outputs=[mix_log, mix_output])
-
-        with gr.Tab("Optimize"):
-            with gr.Row():
-                with gr.Column():
-                    optimize_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
-                    optimize_lufs = gr.Slider(label="Target LUFS", minimum=-30, maximum=-8, value=-14, step=0.5)
-                    optimize_btn = gr.Button("Optimize", variant="primary")
-                with gr.Column():
-                    optimize_log = gr.Textbox(label="Log", lines=10)
-                    optimize_output = gr.File(label="Download Optimized Audio", file_count="single")
-
-            def process_optimize(file, lufs):
-                path, err = save_file(file)
-                if err:
-                    return err, None
-                result, log, err = run_capture(process_optimization, input_path=path, target_lufs=lufs)
-                if err:
-                    return f"{log}\nError: {err}", None
-                return log, result if result else None
-            optimize_btn.click(process_optimize, inputs=[optimize_input, optimize_lufs], outputs=[optimize_log, optimize_output])
-
-        with gr.Tab("Enhance"):
-            with gr.Row():
-                with gr.Column():
-                    enhance_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
-                    enhance_denoise = gr.Checkbox(label="Denoise (reduce background hiss/hum)", value=True)
-                    enhance_boost = gr.Checkbox(label="Boost voice (compressor + EQ)", value=False)
-                    enhance_btn = gr.Button("Enhance", variant="primary")
-                with gr.Column():
-                    enhance_log = gr.Textbox(label="Log", lines=10)
-                    enhance_output = gr.File(label="Download Enhanced Audio", file_count="single")
-
-            def process_enhance(file, denoise, boost):
-                path, err = save_file(file)
-                if err:
-                    return err, None
-                if not denoise and not boost:
-                    return "Select at least Denoise or Boost", None
-                result, log, err = run_capture(process_enhancement, input_path=path, denoise=denoise, boost=boost)
-                if err:
-                    return f"{log}\nError: {err}", None
-                return log, result if result else None
-            enhance_btn.click(process_enhance, inputs=[enhance_input, enhance_denoise, enhance_boost], outputs=[enhance_log, enhance_output])
-
-        with gr.Tab("Trim"):
-            with gr.Row():
-                with gr.Column():
-                    trim_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
-                    trim_aggressive = gr.Checkbox(label="Aggressive mode (remove shorter pauses)", value=False)
-                    trim_btn = gr.Button("Trim Silence", variant="primary")
-                with gr.Column():
-                    trim_log = gr.Textbox(label="Log", lines=10)
-                    trim_output = gr.File(label="Download Trimmed Audio", file_count="single")
-
-            def process_trim(file, aggressive):
-                path, err = save_file(file)
-                if err:
-                    return err, None
-                result, log, err = run_capture(process_trimming, input_path=path, aggressive=aggressive)
-                if err:
-                    return f"{log}\nError: {err}", None
-                return log, result if result else None
-            trim_btn.click(process_trim, inputs=[trim_input, trim_aggressive], outputs=[trim_log, trim_output])
-
-        with gr.Tab("Vibe"):
-            with gr.Row():
-                with gr.Column():
-                    vibe_input = gr.File(label="Audio File", file_types=[".mp3", ".wav", ".ogg", ".m4a", ".flac"])
-                    vibe_mode = gr.Radio(label="Effect", choices=["Slowed", "Slowed + Reverb", "Nightcore"], value="Slowed")
-                    vibe_btn = gr.Button("Apply Effect", variant="primary")
-                with gr.Column():
-                    vibe_log = gr.Textbox(label="Log", lines=10)
-                    vibe_output = gr.File(label="Download Modified Audio", file_count="single")
-
-            def process_vibe_fn(file, mode):
-                path, err = save_file(file)
-                if err:
-                    return err, None
-                result, log, err = run_capture(process_vibe, input_path=path, slowed=(mode=="Slowed"), slowed_reverb=(mode=="Slowed + Reverb"), nightcore=(mode=="Nightcore"))
-                if err:
-                    return f"{log}\nError: {err}", None
-                return log, result if result else None
-            vibe_btn.click(process_vibe_fn, inputs=[vibe_input, vibe_mode], outputs=[vibe_log, vibe_output])
-
-    gr.Markdown("All processing runs locally. Your audio never leaves your device.")
 
 
 def main():
