@@ -3,6 +3,7 @@ import re
 import subprocess
 import gc
 import shutil
+import torch
 from pathlib import Path
 from pydub import AudioSegment
 from museic.utils.helpers import cleanup_temp_files
@@ -34,12 +35,14 @@ def process_separation(input_path, output_dir="output", start_sec=0, end_sec=10,
         del segment
         gc.collect()
 
+        torch.set_num_threads(os.cpu_count() or 4)
+
         print("Running Demucs engine")
         result = subprocess.run([
             "demucs",
             "--two-stems", "vocals",
             "-n", "mdx_extra_q",
-            "-j", "4",
+            "-j", str(os.cpu_count() or 4),
             "--shifts", "0",
             "--overlap", "0.1",
             "-o", output_dir,

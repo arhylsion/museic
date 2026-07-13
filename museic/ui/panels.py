@@ -1,6 +1,6 @@
 import gradio as gr
 
-from museic.ui.helpers import save_file, run_capture, collect_output_files
+from museic.ui.helpers import save_file, stream_capture, collect_output_files
 from museic.ui.guide import render_page, render_tips, total_pages
 from museic.core.extender import process_extension
 from museic.core.separator import process_separation
@@ -10,6 +10,17 @@ from museic.core.optimizer import process_optimization
 from museic.core.enhancer import process_enhancement
 from museic.core.trimmer import process_trimming
 from museic.core.vibe import process_vibe
+
+
+def _stream_outputs(core_func, collector, *args, **kwargs):
+    """Yield (log, None) during processing, then (log, files) at end."""
+    for log_text, result, error in stream_capture(core_func, *args, **kwargs):
+        if error:
+            yield f"{log_text}\nError: {error}", None
+            return
+        yield log_text, None
+    files = collector(result) if collector and result else None
+    yield log_text, files
 
 
 def build_extend_panel():
@@ -33,11 +44,12 @@ def build_extend_panel():
         def process(file, do_auto, s, e, r):
             path, err = save_file(file)
             if err:
-                return err, None
-            result, captured, cerr = run_capture(process_extension, input_path=path, start_sec=s, end_sec=e, auto=do_auto, repeat=int(r))
-            if cerr:
-                return f"{captured}\nError: {cerr}", None
-            return captured, result if result else None
+                yield err, None
+                return
+            yield from _stream_outputs(
+                process_extension, lambda r: r if r else None,
+                input_path=path, start_sec=s, end_sec=e, auto=do_auto, repeat=int(r),
+            )
         btn.click(process, inputs=[inp, auto, start, end, repeat], outputs=[log, out])
     return panel
 
@@ -58,12 +70,12 @@ def build_separate_panel():
         def process(file, s, e, f):
             path, err = save_file(file)
             if err:
-                return err, None
-            result, captured, cerr = run_capture(process_separation, input_path=path, start_sec=s, end_sec=e, target_format=f)
-            if cerr:
-                return f"{captured}\nError: {cerr}", None
-            files = collect_output_files(result)
-            return captured, files
+                yield err, None
+                return
+            yield from _stream_outputs(
+                process_separation, collect_output_files,
+                input_path=path, start_sec=s, end_sec=e, target_format=f,
+            )
         btn.click(process, inputs=[inp, start, end, fmt], outputs=[log, out])
     return panel
 
@@ -83,12 +95,12 @@ def build_extract_panel():
         def process(file, l, f):
             path, err = save_file(file)
             if err:
-                return err, None
-            result, captured, cerr = run_capture(process_extraction, input_path=path, duration=int(l), export_format=f)
-            if cerr:
-                return f"{captured}\nError: {cerr}", None
-            files = collect_output_files(result)
-            return captured, files
+                yield err, None
+                return
+            yield from _stream_outputs(
+                process_extraction, collect_output_files,
+                input_path=path, duration=int(l), export_format=f,
+            )
         btn.click(process, inputs=[inp, length, fmt], outputs=[log, out])
     return panel
 
@@ -107,14 +119,16 @@ def build_mix_panel():
         def process(v, b):
             vpath, err = save_file(v)
             if err:
-                return err, None
+                yield err, None
+                return
             bpath, err = save_file(b)
             if err:
-                return err, None
-            result, captured, cerr = run_capture(process_ducking, voice_path=vpath, bgm_path=bpath)
-            if cerr:
-                return f"{captured}\nError: {cerr}", None
-            return captured, result if result else None
+                yield err, None
+                return
+            yield from _stream_outputs(
+                process_ducking, lambda r: r if r else None,
+                voice_path=vpath, bgm_path=bpath,
+            )
         btn.click(process, inputs=[voice, bgm], outputs=[log, out])
     return panel
 
@@ -133,11 +147,12 @@ def build_optimize_panel():
         def process(file, l):
             path, err = save_file(file)
             if err:
-                return err, None
-            result, captured, cerr = run_capture(process_optimization, input_path=path, target_lufs=l)
-            if cerr:
-                return f"{captured}\nError: {cerr}", None
-            return captured, result if result else None
+                yield err, None
+                return
+            yield from _stream_outputs(
+                process_optimization, lambda r: r if r else None,
+                input_path=path, target_lufs=l,
+            )
         btn.click(process, inputs=[inp, lufs], outputs=[log, out])
     return panel
 
@@ -157,13 +172,15 @@ def build_enhance_panel():
         def process(file, d, b):
             path, err = save_file(file)
             if err:
-                return err, None
+                yield err, None
+                return
             if not d and not b:
-                return "Select at least Denoise or Boost", None
-            result, captured, cerr = run_capture(process_enhancement, input_path=path, denoise=d, boost=b)
-            if cerr:
-                return f"{captured}\nError: {cerr}", None
-            return captured, result if result else None
+                yield "Select at least Denoise or Boost", None
+                return
+            yield from _stream_outputs(
+                process_enhancement, lambda r: r if r else None,
+                input_path=path, denoise=d, boost=b,
+            )
         btn.click(process, inputs=[inp, denoise, boost], outputs=[log, out])
     return panel
 
@@ -182,11 +199,12 @@ def build_trim_panel():
         def process(file, agg):
             path, err = save_file(file)
             if err:
-                return err, None
-            result, captured, cerr = run_capture(process_trimming, input_path=path, aggressive=agg)
-            if cerr:
-                return f"{captured}\nError: {cerr}", None
-            return captured, result if result else None
+                yield err, None
+                return
+            yield from _stream_outputs(
+                process_trimming, lambda r: r if r else None,
+                input_path=path, aggressive=agg,
+            )
         btn.click(process, inputs=[inp, aggressive], outputs=[log, out])
     return panel
 
@@ -205,11 +223,12 @@ def build_vibe_panel():
         def process(file, m):
             path, err = save_file(file)
             if err:
-                return err, None
-            result, captured, cerr = run_capture(process_vibe, input_path=path, slowed=(m=="Slowed"), slowed_reverb=(m=="Slowed + Reverb"), nightcore=(m=="Nightcore"))
-            if cerr:
-                return f"{captured}\nError: {cerr}", None
-            return captured, result if result else None
+                yield err, None
+                return
+            yield from _stream_outputs(
+                process_vibe, lambda r: r if r else None,
+                input_path=path, slowed=(m=="Slowed"), slowed_reverb=(m=="Slowed + Reverb"), nightcore=(m=="Nightcore"),
+            )
         btn.click(process, inputs=[inp, mode], outputs=[log, out])
     return panel
 

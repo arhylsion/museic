@@ -1,7 +1,7 @@
 import gradio as gr
 
 from museic.ui.constants import TOOLS
-from museic.ui.helpers import save_file, run_capture, collect_output_files
+from museic.ui.helpers import save_file, collect_output_files
 from museic.ui.guide import render_page, render_tips, total_pages
 from museic.ui.panels import (
     build_extend_panel,
