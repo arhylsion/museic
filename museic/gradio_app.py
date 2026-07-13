@@ -51,51 +51,51 @@ def collect_output_files(dir_path):
 
 guide_pages = [
     {
-        "EN": ("Extend", "Loop and extend audio tracks seamlessly -- automatically detects beat-aligned loop points or lets you set them manually. Perfect for making background music longer. Supports automatic edge-beat sync or manual start/end markers."),
-        "ID": ("Extend (Perpanjang)", "Memperpanjang audio dengan loop point presisi. Auto-deteksi beat atau atur manual start/end. Cocok untuk membuat musik latar yang lebih panjang tanpa jeda."),
-        "JP": ("Extend (延长)", "オーディオをシームレスにループ延长。ビートに合わせたループポイントを自動検出または手動設定可能。BGM制作に最適。"),
+        "en": ("Extend", "Loop and extend audio tracks seamlessly -- automatically detects beat-aligned loop points or lets you set them manually. Perfect for making background music longer. Supports automatic edge-beat sync or manual start/end markers."),
+        "id": ("Extend (Perpanjang)", "Memperpanjang audio dengan loop point presisi. Auto-deteksi beat atau atur manual start/end. Cocok untuk membuat musik latar yang lebih panjang tanpa jeda."),
+        "jp": ("Extend (延长)", "オーディオをシームレスにループ延长。ビートに合わせたループポイントを自動検出または手動設定可能。BGM制作に最適。"),
     },
     {
-        "EN": ("Separate", "Isolate vocals and instrumental stems using the Demucs AI engine. Process only a specific time slice to save memory and time. Exports as clean separate files ready for remixing or karaoke."),
-        "ID": ("Separate (Pisahkan)", "Pisahkan vokal dan instrumental menggunakan AI Demucs. Proses hanya potongan waktu tertentu untuk hemat memori. Ekspor sebagai file terpisah siap pakai."),
-        "JP": ("Separate (分離)", "Demucs AIエンジンを使用してボーカルと楽器を分離。特定の時間範囲のみ処理してメモリと時間を節約。"),
+        "en": ("Separate", "Isolate vocals and instrumental stems using the Demucs AI engine. Process only a specific time slice to save memory and time. Exports as clean separate files ready for remixing or karaoke."),
+        "id": ("Separate (Pisahkan)", "Pisahkan vokal dan instrumental menggunakan AI Demucs. Proses hanya potongan waktu tertentu untuk hemat memori. Ekspor sebagai file terpisah siap pakai."),
+        "jp": ("Separate (分離)", "Demucs AIエンジンを使用してボーカルと楽器を分離。特定の時間範囲のみ処理してメモリと時間を節約。"),
     },
     {
-        "EN": ("Extract", "Automatically detect the most energetic part of a song (the hook or chorus) and extract it. Uses Separate internally to produce clean vocal and instrumental stems of the hook."),
-        "ID": ("Extract (Ekstrak)", "Deteksi otomatis bagian paling energik dari lagu (hook atau chorus) lalu ekstrak. Menggunakan Separate untuk menghasilkan stem vokal dan instrumental yang bersih."),
-        "JP": ("Extract (抽出)", "曲の最も盛り上がる部分（フックまたはサビ）を自動検出して抽出。Separateを使用してクリーンなステムを出力。"),
+        "en": ("Extract", "Automatically detect the most energetic part of a song (the hook or chorus) and extract it. Uses Separate internally to produce clean vocal and instrumental stems of the hook."),
+        "id": ("Extract (Ekstrak)", "Deteksi otomatis bagian paling energik dari lagu (hook atau chorus) lalu ekstrak. Menggunakan Separate untuk menghasilkan stem vokal dan instrumental yang bersih."),
+        "jp": ("Extract (抽出)", "曲の最も盛り上がる部分（フックまたはサビ）を自動検出して抽出。Separateを使用してクリーンなステムを出力。"),
     },
     {
-        "EN": ("Mix", "Auto-ducking: lowers background music when voice is detected, raises it back during silence. Features smooth attack and release for natural-sounding transitions. Ideal for podcasts, voiceovers, and live streaming."),
-        "ID": ("Mix (Campur)", "Auto-ducking: musik latar otomatis mengecil saat ada suara vokal, kembali normal saat hening. Dilengkapi transisi halus (attack/release) untuk hasil natural. Cocok untuk podcast, voiceover, dan live streaming."),
-        "JP": ("Mix (ミックス)", "オートダッキング：ボーカル検出時にBGMを下げ、無音時に戻す。スムーズなアタック/リリースで自然なトランジション。ポッドキャストや配信に最適。"),
+        "en": ("Mix", "Auto-ducking: lowers background music when voice is detected, raises it back during silence. Features smooth attack and release for natural-sounding transitions. Ideal for podcasts, voiceovers, and live streaming."),
+        "id": ("Mix (Campur)", "Auto-ducking: musik latar otomatis mengecil saat ada suara vokal, kembali normal saat hening. Dilengkapi transisi halus (attack/release) untuk hasil natural. Cocok untuk podcast, voiceover, dan live streaming."),
+        "jp": ("Mix (ミックス)", "オートダッキング：ボーカル検出時にBGMを下げ、無音時に戻す。スムーズなアタック/リリースで自然なトランジション。ポッドキャストや配信に最適。"),
     },
     {
-        "EN": ("Optimize", "Normalize audio to broadcast-standard LUFS loudness (default -14 LUFS). Ensures consistent volume levels across platforms like YouTube, Spotify, radio, and podcast directories."),
-        "ID": ("Optimize (Optimalkan)", "Normalisasi loudness ke standar broadcast (-14 LUFS default). Volume konsisten di YouTube, Spotify, radio, dan direktori podcast."),
-        "JP": ("Optimize (最適化)", "放送規格のLUFSラウドネス（デフォルト-14 LUFS）に正規化。YouTube、Spotify、ラジオで一貫した音量を実現。"),
+        "en": ("Optimize", "Normalize audio to broadcast-standard LUFS loudness (default -14 LUFS). Ensures consistent volume levels across platforms like YouTube, Spotify, radio, and podcast directories."),
+        "id": ("Optimize (Optimalkan)", "Normalisasi loudness ke standar broadcast (-14 LUFS default). Volume konsisten di YouTube, Spotify, radio, dan direktori podcast."),
+        "jp": ("Optimize (最適化)", "放送規格のLUFSラウドネス（デフォルト-14 LUFS）に正規化。YouTube、Spotify、ラジオで一貫した音量を実現。"),
     },
     {
-        "EN": ("Enhance", "Reduce background noise (hiss, hum, ambient room tone) with adaptive filtering. Boost voice clarity using compressor and EQ. One-click cleanup for vocal recordings and field audio."),
-        "ID": ("Enhance (Perbaiki)", "Kurangi noise latar (desis, dengung, suara ruangan) dengan filter adaptif. Tingkatkan kejelasan vokal dengan kompresor dan EQ. Pembersihan instan untuk rekaman vokal."),
-        "JP": ("Enhance (強化)", "適応フィルターでノイズ（ヒス、ハム、環境音）を低減。コンプレッサーとEQで声を明瞭化。ボーカル録音のワンクリック補正。"),
+        "en": ("Enhance", "Reduce background noise (hiss, hum, ambient room tone) with adaptive filtering. Boost voice clarity using compressor and EQ. One-click cleanup for vocal recordings and field audio."),
+        "id": ("Enhance (Perbaiki)", "Kurangi noise latar (desis, dengung, suara ruangan) dengan filter adaptif. Tingkatkan kejelasan vokal dengan kompresor dan EQ. Pembersihan instan untuk rekaman vokal."),
+        "jp": ("Enhance (強化)", "適応フィルターでノイズ（ヒス、ハム、環境音）を低減。コンプレッサーとEQで声を明瞭化。ボーカル録音のワンクリック補正。"),
     },
     {
-        "EN": ("Trim", "Automatically detect and remove silence and dead air from recordings. Aggressive mode removes shorter pauses for tighter pacing. Perfect for cleaning up podcasts, voice messages, and interviews."),
-        "ID": ("Trim (Potong)", "Deteksi dan hapus hening dan jeda mati dari rekaman secara otomatis. Mode agresif untuk jeda pendek. Cocok untuk merapikan podcast, pesan suara, dan wawancara."),
-        "JP": ("Trim (トリム)", "録音から無音部分を自動検出して削除。アグレッシブモードで短い間隔も除去。ポッドキャストやボイスメッセージの整形に最適。"),
+        "en": ("Trim", "Automatically detect and remove silence and dead air from recordings. Aggressive mode removes shorter pauses for tighter pacing. Perfect for cleaning up podcasts, voice messages, and interviews."),
+        "id": ("Trim (Potong)", "Deteksi dan hapus hening dan jeda mati dari rekaman secara otomatis. Mode agresif untuk jeda pendek. Cocok untuk merapikan podcast, pesan suara, dan wawancara."),
+        "jp": ("Trim (トリム)", "録音から無音部分を自動検出して削除。アグレッシブモードで短い間隔も除去。ポッドキャストやボイスメッセージの整形に最適。"),
     },
     {
-        "EN": ("Vibe", "Apply social media audio effects: Slowed (chill, dark atmosphere without reverb), Slowed+Reverb (ethereal with echo ambience), or Nightcore (energetic, pitched up). Ready for TikTok, Reels, and Shorts."),
-        "ID": ("Vibe (Suasana)", "Efek audio tren media sosial: Slowed (suasana chill/gelap tanpa reverb), Slowed+Reverb (ethereal dengan gema), atau Nightcore (energik, nada tinggi). Siap untuk TikTok, Reels, dan Shorts."),
-        "JP": ("Vibe (雰囲気)", "SNS向けオーディオエフェクト：Slowed（落ち着いた雰囲気、リバーブなし）、Slowed+Reverb（幻想的なエコー）、Nightcore（元気な雰囲気）。TikTok、Reels、Shorts対応。"),
+        "en": ("Vibe", "Apply social media audio effects: Slowed (chill, dark atmosphere without reverb), Slowed+Reverb (ethereal with echo ambience), or Nightcore (energetic, pitched up). Ready for TikTok, Reels, and Shorts."),
+        "id": ("Vibe (Suasana)", "Efek audio tren media sosial: Slowed (suasana chill/gelap tanpa reverb), Slowed+Reverb (ethereal dengan gema), atau Nightcore (energik, nada tinggi). Siap untuk TikTok, Reels, dan Shorts."),
+        "jp": ("Vibe (雰囲気)", "SNS向けオーディオエフェクト：Slowed（落ち着いた雰囲気、リバーブなし）、Slowed+Reverb（幻想的なエコー）、Nightcore（元気な雰囲気）。TikTok、Reels、Shorts対応。"),
     },
 ]
 
 tips = {
-    "EN": "Tips\n- Upload any audio file (.mp3, .wav, .ogg, .m4a, .flac)\n- Processed files appear on the right -- click to download\n- All processing runs locally on your device -- nothing leaves your computer",
-    "ID": "Tips\n- Upload file audio (.mp3, .wav, .ogg, .m4a, .flac)\n- File hasil muncul di kanan -- klik untuk download\n- Semua proses berjalan lokal di perangkat Anda -- tidak ada yang diunggah ke cloud",
-    "JP": "Tips\n- オーディオファイル(.mp3, .wav, .ogg, .m4a, .flac)をアップロード\n- 処理結果は右側に表示 -- クリックしてダウンロード\n- すべての処理はローカルデバイス上で実行 -- クラウドに送信されません",
+    "en": "Tips\n- Upload any audio file (.mp3, .wav, .ogg, .m4a, .flac)\n- Processed files appear on the right -- click to download\n- All processing runs locally on your device -- nothing leaves your computer",
+    "id": "Tips\n- Upload file audio (.mp3, .wav, .ogg, .m4a, .flac)\n- File hasil muncul di kanan -- klik untuk download\n- Semua proses berjalan lokal di perangkat Anda -- tidak ada yang diunggah ke cloud",
+    "jp": "Tips\n- オーディオファイル(.mp3, .wav, .ogg, .m4a, .flac)をアップロード\n- 処理結果は右側に表示 -- クリックしてダウンロード\n- すべての処理はローカルデバイス上で実行 -- クラウドに送信されません",
 }
 
 total_pages = len(guide_pages)
@@ -105,41 +105,40 @@ def render_page(lang, page):
     page = max(1, min(page, total_pages))
     entry = guide_pages[page - 1]
     title, desc = entry[lang]
-    return f"**Page {page} / {total_pages}**\n\n### {title}\n\n{desc}"
+    return f"### {title}\n\n{desc}"
 
 
 def render_tips(lang):
-    return f"### {tips[lang]}"
+    return f"\n\n---\n{tips[lang]}"
 
 
 CSS = """
+/* sidebar radio */
+.sidebar-radio label { min-height: 38px; display: flex; align-items: center; }
 @media (max-width: 768px) {
-  .sidebar-col .radio-group { display: flex; flex-wrap: wrap; gap: 2px; }
-  .sidebar-col .radio-group label { padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; }
+  .sidebar-radio { display: flex; flex-wrap: wrap; gap: 1px; }
+  .sidebar-radio label { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; }
 }
+/* guide lang toggle */
+.lang-select .wrap { border: none !important; box-shadow: none !important; background: transparent !important; gap: 0 !important; padding: 0 !important; }
+.lang-select label { border: none !important; box-shadow: none !important; padding: 2px 8px !important; margin: 0 !important; background: transparent !important; font-size: 13px; font-weight: 500; text-transform: lowercase; }
+.lang-select label.selected, .lang-select input:checked + span { font-weight: 700; text-decoration: underline; }
+.lang-select input[type="radio"] { position: absolute !important; opacity: 0 !important; width: 0 !important; height: 0 !important; }
+/* guide content area */
+.guide-content { min-height: 280px; }
 """
 
-with gr.Blocks(title="Museic", head=f"<style>{CSS}</style>") as demo:
+with gr.Blocks(title="Museic") as demo:
     gr.Markdown("## Museic Audio Engineering Toolkit")
     gr.Markdown("Upload audio, adjust parameters, and process -- all locally on your device.")
 
     with gr.Row(equal_height=True):
         with gr.Column(scale=0, min_width=200, elem_classes="sidebar-col"):
             tool_radio = gr.Radio(
-                choices=TOOLS, value="Extend",
+                choices=TOOLS + ["Guide"], value="Extend",
                 label="", show_label=False,
-                elem_classes="radio-group",
+                elem_classes="sidebar-radio",
             )
-            with gr.Accordion("Guide", open=False):
-                guide_lang = gr.Radio(
-                    choices=["EN", "ID", "JP"], value="EN",
-                    label="", show_label=False,
-                )
-                guide_content = gr.Markdown(render_page("EN", 1))
-                guide_tips = gr.Markdown(render_tips("EN"))
-                with gr.Row():
-                    guide_prev = gr.Button("Prev", size="sm", scale=0)
-                    guide_next = gr.Button("Next", size="sm", scale=0)
 
         with gr.Column(scale=1):
             with gr.Column(visible=True) as extend_panel:
@@ -320,14 +319,29 @@ with gr.Blocks(title="Museic", head=f"<style>{CSS}</style>") as demo:
                     return log, result if result else None
                 vibe_btn.click(process_vibe_fn, inputs=[vibe_input, vibe_mode], outputs=[vibe_log, vibe_output])
 
+            with gr.Column(visible=False) as guide_panel:
+                with gr.Row():
+                    guide_lang = gr.Radio(
+                        choices=["id", "en", "jp"], value="en",
+                        label="", show_label=False,
+                        elem_classes="lang-select",
+                    )
+                guide_content = gr.Markdown(render_page("en", 1), elem_classes="guide-content")
+                guide_tips = gr.Markdown(render_tips("en"))
+                with gr.Row():
+                    guide_page_display = gr.Markdown("**1/8**", scale=0)
+                    guide_prev = gr.Button("<", size="sm", scale=0, min_width=40)
+                    guide_next = gr.Button(">", size="sm", scale=0, min_width=40)
+
     gr.Markdown("---")
-    gr.Markdown(f"Museic by Arhylsion (https://github.com/arhylsion)")
+    gr.Markdown("Museic by Arhylsion (https://github.com/arhylsion)")
     gr.Markdown("All processing runs locally. Your audio never leaves your device.")
 
-    panels = [extend_panel, separate_panel, extract_panel, mix_panel, optimize_panel, enhance_panel, trim_panel, vibe_panel]
+    panels = [extend_panel, separate_panel, extract_panel, mix_panel, optimize_panel, enhance_panel, trim_panel, vibe_panel, guide_panel]
+    choices = TOOLS + ["Guide"]
 
     def switch_tab(selected):
-        return tuple(gr.update(visible=(t == selected)) for t in TOOLS)
+        return tuple(gr.update(visible=(c == selected)) for c in choices)
 
     tool_radio.change(switch_tab, inputs=tool_radio, outputs=panels)
 
@@ -336,19 +350,22 @@ with gr.Blocks(title="Museic", head=f"<style>{CSS}</style>") as demo:
     def update_guide(lang, page):
         return render_page(lang, page)
 
+    def update_tips(lang):
+        return render_tips(lang)
+
     def change_page(lang, page, delta):
         new_page = max(1, min(page + delta, total_pages))
-        return new_page, render_page(lang, new_page)
+        return new_page, f"**{new_page}/{total_pages}**", render_page(lang, new_page)
 
     guide_lang.change(update_guide, inputs=[guide_lang, guide_page], outputs=guide_content)
+    guide_lang.change(update_tips, inputs=guide_lang, outputs=guide_tips)
     guide_page.change(update_guide, inputs=[guide_lang, guide_page], outputs=guide_content)
-    guide_lang.change(lambda l: render_tips(l), inputs=guide_lang, outputs=guide_tips)
-    guide_prev.click(change_page, inputs=[guide_lang, guide_page, gr.State(-1)], outputs=[guide_page, guide_content])
-    guide_next.click(change_page, inputs=[guide_lang, guide_page, gr.State(1)], outputs=[guide_page, guide_content])
+    guide_prev.click(change_page, inputs=[guide_lang, guide_page, gr.State(-1)], outputs=[guide_page, guide_page_display, guide_content])
+    guide_next.click(change_page, inputs=[guide_lang, guide_page, gr.State(1)], outputs=[guide_page, guide_page_display, guide_content])
 
 
 def main():
-    demo.launch(server_name="0.0.0.0", server_port=7860, theme=gr.themes.Soft())
+    demo.launch(server_name="0.0.0.0", server_port=7860, theme=gr.themes.Soft(), head=f"<style>{CSS}</style>")
 
 
 if __name__ == "__main__":
